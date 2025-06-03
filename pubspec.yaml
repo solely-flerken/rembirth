@@ -9,11 +9,21 @@ environment:
 dependencies:
   flutter:
     sdk: flutter
+  isar:
+    hosted: https://pub.isar-community.dev
+    version: 4.0.3
+  isar_flutter_libs:
+    hosted: https://pub.isar-community.dev
+    version: 4.0.3
+  logger: ^2.5.0
+  path_provider: ^2.1.5
 
 dev_dependencies:
   flutter_test:
     sdk: flutter
-  flutter_lints: ^5.0.0
+  flutter_lints: ^6.0.0
+  build_runner: any
+  analyzer: ^6.11.0
 
 flutter:
   uses-material-design: true
