@@ -51,18 +51,16 @@ class DayPicker extends StatelessWidget {
             final bool isToday = isCurrentMonth && today.day == day;
             final bool isSelected = initialDay == day;
 
-            Color? backgroundColor;
             Color? textColor = Theme.of(context).textTheme.bodyLarge?.color;
+            Color? backgroundColor;
+            Color borderColor = Colors.transparent;
 
-            if (isToday && isSelected) {
-              backgroundColor = Theme.of(context).colorScheme.primary;
+            if (isSelected) {
               textColor = Colors.white;
-            } else if (isSelected) {
-              backgroundColor = Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8);
-              textColor = Colors.white;
-            } else if (isToday) {
               backgroundColor = Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
-              textColor = Colors.white;
+            }
+            if (isToday) {
+              borderColor = Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8);
             }
 
             return InkWell(
@@ -71,7 +69,10 @@ class DayPicker extends StatelessWidget {
               child: Card(
                 margin: EdgeInsets.symmetric(horizontal: 3, vertical: 3),
                 color: backgroundColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12.0),
+                  side: BorderSide(color: borderColor, width: 2),
+                ),
                 elevation: isToday || isSelected ? 5 : 2,
                 child: Center(
                   child: Text(

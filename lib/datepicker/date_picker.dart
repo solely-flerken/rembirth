@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:rembirth/datepicker/info.dart';
 import 'package:rembirth/datepicker/partial_date.dart';
 import 'package:rembirth/datepicker/util.dart';
 import 'year_picker.dart';
@@ -36,6 +37,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   int? selectedDay;
 
   DatePickerStep? currentDatePickerStep;
+  DatePickerStep? _previousStepBeforeInfo;
 
   @override
   void initState() {
@@ -61,6 +63,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
     // Determine the starting page index for the PageView
     _initialPageIndex = currentDatePickerStep!.pageIndex;
+
     _controller = PageController(initialPage: _initialPageIndex);
 
     _controller.addListener(() {
@@ -80,9 +83,18 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   }
 
   void _nextPage() {
-    // Page 0: Year, Page 1: Month, Page 2: Day
-    if (_controller.page! < 2) {
+    // Page 0: Info, Page 1: Year, Page 2: Month, Page 3: Day
+    if (_controller.page! < 3) {
       _controller.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+    }
+  }
+
+  void _onInfoRead() {
+    if (_previousStepBeforeInfo != null) {
+      _controller.jumpToPage(_previousStepBeforeInfo!.pageIndex);
+      _previousStepBeforeInfo = null;
+    } else {
+      _nextPage();
     }
   }
 
@@ -120,6 +132,10 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   }
 
   List<TextSpan> _buildFormattedDateSpans() {
+    if (currentDatePickerStep == DatePickerStep.info) {
+      return [const TextSpan(text: 'Info')];
+    }
+
     if (selectedMonth == null) {
       return [const TextSpan(text: 'Select a date')];
     }
@@ -171,11 +187,46 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
           children: [
             // Date display
             Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16),
-              child: Text.rich(
-                TextSpan(
-                  style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
-                  children: _buildFormattedDateSpans(),
+              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+              child: SizedBox(
+                height: 40,
+                child: Stack(
+                  clipBehavior: Clip.none,
+                  children: [
+                    Align(
+                      alignment: Alignment.center,
+                      child: SizedBox(
+                        width: double.infinity,
+                        child: Text.rich(
+                          TextSpan(
+                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
+                            children: _buildFormattedDateSpans(),
+                          ),
+                          textAlign: TextAlign.center,
+                        ),
+                      ),
+                    ),
+
+                    // Info button
+                    if (currentDatePickerStep != DatePickerStep.info)
+                      Positioned(
+                        right: -8,
+                        top: 0,
+                        bottom: 0,
+                        child: Material(
+                          type: MaterialType.transparency,
+                          shape: const CircleBorder(),
+                          child: InkWell(
+                            borderRadius: BorderRadius.circular(24),
+                            onTap: () {
+                              _previousStepBeforeInfo = currentDatePickerStep;
+                              _controller.jumpToPage(DatePickerStep.info.pageIndex);
+                            },
+                            child: const Padding(padding: EdgeInsets.all(8), child: Icon(Icons.info_outline, size: 24)),
+                          ),
+                        ),
+                      ),
+                  ],
                 ),
               ),
             ),
@@ -188,8 +239,9 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                 controller: _controller,
                 physics: const NeverScrollableScrollPhysics(),
                 children: [
+                  DatePickerInfoWidget(onInfoRead: () => _onInfoRead()),
                   YearPickerWidget(
-                    startYear: 1950,
+                    startYear: 1900,
                     initialYear: selectedYear,
                     key: const ValueKey('YearPicker'),
                     onYearSelected: _onYearSelected,

@@ -16,9 +16,10 @@ const Map<int, String> months = {
 const List<String> weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
 
 enum DatePickerStep {
-  year(0),
-  month(1),
-  day(2);
+  info(0),
+  year(1),
+  month(2),
+  day(3);
 
   final int pageIndex;
 

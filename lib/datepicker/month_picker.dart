@@ -32,19 +32,16 @@ class MonthPicker extends StatelessWidget {
             final bool isCurrentMonth = month == currentMonth;
             final bool isSelected = month == initialMonth;
 
-            Color? backgroundColor;
             Color? textColor = Theme.of(context).textTheme.bodyLarge?.color;
+            Color? backgroundColor;
+            Color borderColor = Colors.transparent;
 
-            if (isSelected && isCurrentMonth) {
-              backgroundColor = Theme.of(context).colorScheme.primary;
+            if (isSelected) {
               textColor = Colors.white;
-            } else if (isSelected) {
-              backgroundColor = Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8);
-
-              textColor = Colors.white;
-            } else if (isCurrentMonth) {
               backgroundColor = Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
-              textColor = Colors.white;
+            }
+            if (isCurrentMonth) {
+              borderColor = Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8);
             }
 
             return InkWell(
@@ -52,7 +49,10 @@ class MonthPicker extends StatelessWidget {
               onTap: () => onMonthSelected(month),
               child: Card(
                 color: backgroundColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                  side: BorderSide(color: borderColor, width: 3),
+                ),
                 elevation: isSelected || isCurrentMonth ? 5 : 2,
                 child: Center(
                   child: Text(

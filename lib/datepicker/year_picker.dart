@@ -35,21 +35,20 @@ class YearPickerWidget extends StatelessWidget {
             final bool isCurrentYear = year == currentYear;
             final bool isSelected = year == initialYear;
 
-            Color? backgroundColor;
             Color? textColor = Theme.of(context).textTheme.bodyLarge?.color;
+            Color? backgroundColor;
+            Color borderColor = Colors.transparent;
 
-            if (isSelected && isCurrentYear) {
-              backgroundColor = Theme.of(context).colorScheme.primary;
+            if (isSelected) {
               textColor = Colors.white;
-            } else if (isSelected) {
-              backgroundColor = Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8);
-              textColor = Colors.white;
-            } else if (isCurrentYear) {
               backgroundColor = Theme.of(context).colorScheme.primary.withValues(alpha: 0.8);
+            }
+            if (isCurrentYear) {
+              borderColor = Theme.of(context).colorScheme.secondary.withValues(alpha: 0.8);
+            }
+            if (year == null) {
               textColor = Colors.white;
-            } else if (year == null) {
               backgroundColor = Theme.of(context).colorScheme.tertiary.withValues(alpha: 0.8);
-              textColor = Colors.white;
             }
 
             return InkWell(
@@ -57,7 +56,10 @@ class YearPickerWidget extends StatelessWidget {
               onTap: () => onYearSelected(year),
               child: Card(
                 color: backgroundColor,
-                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16.0)),
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(16.0),
+                  side: BorderSide(color: borderColor, width: 3),
+                ),
                 elevation: isSelected || isCurrentYear ? 5 : 2,
                 child: Center(
                   child: Text(
