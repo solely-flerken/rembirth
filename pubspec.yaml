@@ -7,6 +7,8 @@ environment:
   sdk: ^3.8.0
 
 dependencies:
+  collection: ^1.19.1
+  dropdown_button2: ^2.3.9
   flutter:
     sdk: flutter
   isar:
@@ -17,6 +19,7 @@ dependencies:
     version: 4.0.3
   logger: ^2.5.0
   path_provider: ^2.1.5
+  provider: ^6.1.5
 
 dev_dependencies:
   flutter_test:
