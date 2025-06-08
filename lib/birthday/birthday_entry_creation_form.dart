@@ -106,8 +106,18 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
     Navigator.of(context).pop();
   }
 
-  Future<void> _openDatePicker(BuildContext context, DatePickerStep step, PartialDate? initialDate) async {
-    final selectedDate = await CustomDatePicker.show(context, initialStep: step, initialDate: initialDate);
+  Future<void> _openDatePicker(
+    BuildContext context,
+    DatePickerStep step,
+    DatePickerStep? stop,
+    PartialDate? initialDate,
+  ) async {
+    final selectedDate = await CustomDatePicker.show(
+      context,
+      initialStep: step,
+      stopStep: stop,
+      initialDate: initialDate,
+    );
     if (selectedDate != null) {
       setState(() {
         _selectedDate = selectedDate;
@@ -128,16 +138,19 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
     return [
       TextSpan(
         text: '$selectedDay ',
-        recognizer: TapGestureRecognizer()..onTap = () => _openDatePicker(context, DatePickerStep.day, _selectedDate),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () => _openDatePicker(context, DatePickerStep.day, DatePickerStep.day, _selectedDate),
       ),
       TextSpan(
         text: '$monthName ',
         style: TextStyle(color: Theme.of(context).colorScheme.primary),
-        recognizer: TapGestureRecognizer()..onTap = () => _openDatePicker(context, DatePickerStep.month, _selectedDate),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () => _openDatePicker(context, DatePickerStep.month, DatePickerStep.month, _selectedDate),
       ),
       TextSpan(
         text: selectedYear != null ? '$selectedYear' : '',
-        recognizer: TapGestureRecognizer()..onTap = () => _openDatePicker(context, DatePickerStep.year, _selectedDate),
+        recognizer: TapGestureRecognizer()
+          ..onTap = () => _openDatePicker(context, DatePickerStep.year, DatePickerStep.year, _selectedDate),
       ),
     ];
   }
@@ -216,7 +229,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
 
               /// Date
               InkWell(
-                onTap: () => _openDatePicker(context, DatePickerStep.year, _selectedDate),
+                onTap: () => _openDatePicker(context, DatePickerStep.year, null, _selectedDate),
                 child: InputDecorator(
                   decoration: InputDecoration(labelText: 'Date', border: OutlineInputBorder(), errorText: _dateError),
                   child: Row(

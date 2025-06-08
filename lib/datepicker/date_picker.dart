@@ -9,18 +9,25 @@ import 'day_picker.dart';
 
 class CustomDatePicker extends StatefulWidget {
   final DatePickerStep initialStep;
+  final DatePickerStep? stopStep;
   final PartialDate? initialDate;
 
-  const CustomDatePicker({super.key, this.initialStep = DatePickerStep.year, this.initialDate});
+  const CustomDatePicker({
+    super.key,
+    this.initialStep = DatePickerStep.year,
+    this.stopStep,
+    this.initialDate,
+  });
 
   static Future<PartialDate?> show(
     BuildContext context, {
     DatePickerStep initialStep = DatePickerStep.year,
+    DatePickerStep? stopStep,
     PartialDate? initialDate,
   }) {
     return showDialog<PartialDate>(
       context: context,
-      builder: (_) => CustomDatePicker(initialStep: initialStep, initialDate: initialDate),
+      builder: (_) => CustomDatePicker(initialStep: initialStep, stopStep: stopStep, initialDate: initialDate),
     );
   }
 
@@ -37,6 +44,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   int? selectedDay;
 
   DatePickerStep? currentDatePickerStep;
+  DatePickerStep? stopStep;
   DatePickerStep? _previousStepBeforeInfo;
 
   @override
@@ -44,6 +52,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     super.initState();
 
     currentDatePickerStep = widget.initialStep;
+    stopStep = widget.stopStep ?? DatePickerStep.day;
 
     if (widget.initialDate != null) {
       selectedYear = widget.initialDate!.year;
@@ -82,10 +91,18 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     super.dispose();
   }
 
-  void _nextPage() {
+  void _nextPage() async {
     // Page 0: Info, Page 1: Year, Page 2: Month, Page 3: Day
+    if (currentDatePickerStep == stopStep) {
+      // Delay closing for visual feedback
+      await Future.delayed(const Duration(milliseconds: 150));
+
+      if (!mounted) return;
+      Navigator.pop(context, PartialDate(year: selectedYear, month: selectedMonth!, day: selectedDay!));
+    }
+
     if (_controller.page! < 3) {
-      _controller.nextPage(duration: const Duration(milliseconds: 250), curve: Curves.easeInOut);
+      _controller.nextPage(duration: const Duration(milliseconds: 150), curve: Curves.easeInOut);
     }
   }
 
@@ -121,14 +138,9 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     _nextPage();
   }
 
-  void _onDaySelected(int day) async {
+  void _onDaySelected(int day) {
     setState(() => selectedDay = day);
-
-    // Delay closing for visual feedback
-    await Future.delayed(const Duration(milliseconds: 250));
-
-    if (!mounted) return;
-    Navigator.pop(context, PartialDate(year: selectedYear, month: selectedMonth!, day: day));
+    _nextPage();
   }
 
   List<TextSpan> _buildFormattedDateSpans() {
