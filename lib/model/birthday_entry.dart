@@ -9,9 +9,9 @@ class BirthdayEntry extends SyncableItem {
   int id = 0;
 
   String? name;
-  short? year;
-  short? month;
-  short? day;
+  int? year;
+  int? month;
+  int? day;
 
   // Since Isar v4 doesn't support links yet, we need to use a workaround.
   String? category;
