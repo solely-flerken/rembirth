@@ -32,7 +32,7 @@ class BirthdayEntryTile extends StatelessWidget {
     final birthdayDate = DateTime(year ?? now.year, month, day);
 
     final daysUntil = DateUtil.daysUntilDate(now, birthdayDate);
-    final nextBirthdayDate = DateTime(now.year, month, day).add(Duration(days: daysUntil));
+    final nextBirthdayDate = now.add(Duration(days: daysUntil));
 
     final weekdayName = DateFormat.EEEE().format(nextBirthdayDate);
     final monthName = months[month];
