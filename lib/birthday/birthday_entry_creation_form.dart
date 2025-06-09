@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
-import 'package:provider/provider.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/util/logger.dart';
@@ -11,12 +10,12 @@ import '../datepicker/date_picker.dart';
 import '../datepicker/util.dart';
 import '../model/birthday_entry.dart';
 import '../datepicker/partial_date.dart';
-import '../save/save_manager.dart';
 
 class BirthdayEntryCreationForm extends StatefulWidget {
   final BirthdayEntry? initialEntry;
+  final List<BirthdayEntryCategory> categories;
 
-  const BirthdayEntryCreationForm({super.key, this.initialEntry});
+  const BirthdayEntryCreationForm({super.key, this.initialEntry, required this.categories});
 
   @override
   State<BirthdayEntryCreationForm> createState() => _BirthdayEntryCreationFormState();
@@ -38,34 +37,20 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
   void initState() {
     super.initState();
 
-    _initializeForm();
-  }
-
-  Future<void> _initializeForm() async {
-    await _loadCategories();
+    _categories = widget.categories;
 
     if (widget.initialEntry != null) {
-      setState(() {
-        _name = widget.initialEntry!.name!;
-        nameController.text = _name!;
+      _name = widget.initialEntry!.name!;
+      nameController.text = _name!;
 
-        _category = _categories.firstWhereOrNull((c) => c.name == widget.initialEntry!.category);
+      _category = _categories.firstWhereOrNull((c) => c.name == widget.initialEntry!.category);
 
-        _selectedDate = PartialDate(
-          year: widget.initialEntry!.year,
-          month: widget.initialEntry!.month!,
-          day: widget.initialEntry!.day!,
-        );
-      });
+      _selectedDate = PartialDate(
+        year: widget.initialEntry!.year,
+        month: widget.initialEntry!.month!,
+        day: widget.initialEntry!.day!,
+      );
     }
-  }
-
-  Future<void> _loadCategories() async {
-    final categoryManager = context.read<SaveManager<BirthdayEntryCategory>>();
-    final categories = await categoryManager.loadAll();
-    setState(() {
-      _categories = categories;
-    });
   }
 
   void _submitForm() {
