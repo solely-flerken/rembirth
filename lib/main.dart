@@ -1,47 +1,37 @@
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 import 'package:rembirth/model/birthday_entry.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/save/isar_save_service.dart';
 import 'package:rembirth/save/save_manager.dart';
 import 'package:rembirth/save/save_mode.dart';
-import 'package:rembirth/util/logger.dart';
+
+import 'birthday/birthday_list.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
 
   await IsarDatabase.open([BirthdayEntrySchema, BirthdayEntryCategorySchema]);
 
-  final isarService = IsarSaveService<BirthdayEntry>();
+  final birthdayEntryService = IsarSaveService<BirthdayEntry>();
   final birthdayEntryCategoryService = IsarSaveService<BirthdayEntryCategory>();
 
-  final newEntryCategory = BirthdayEntryCategory()
-    ..id = IsarDatabase.instance.birthdayEntryCategorys.autoIncrement()
-    ..name = "Family";
+  final saveManagerBirthdayEntry = SaveManager(localService: birthdayEntryService, saveMode: SaveMode.local);
+  final saveManagerBirthdayEntryCategory = SaveManager(
+    localService: birthdayEntryCategoryService,
+    saveMode: SaveMode.local,
+  );
 
-  final saveManagerCategory = SaveManager(localService: birthdayEntryCategoryService, saveMode: SaveMode.local);
-
-  await saveManagerCategory.save(newEntryCategory);
-
-  final newEntry = BirthdayEntry()
-    ..id = IsarDatabase.instance.birthdayEntrys.autoIncrement()
-    ..category = null
-    ..name = 'Adrian'
-    ..day = 6
-    ..month = 8
-    ..year = 2000;
-
-  final saveManager = SaveManager(localService: isarService, saveMode: SaveMode.local);
-
-  await saveManager.save(newEntry);
-  logger.i('Main: Saving entry: $newEntry');
-
-  var loaded = await saveManager.load(newEntry.id);
-  logger.i('Main: Loaded entry: $loaded');
-
-  await saveManager.delete(newEntry.id);
-
-  runApp(const MainApp());
+  runApp(
+    MultiProvider(
+      providers: [
+        Provider<SaveManager<BirthdayEntry>>.value(value: saveManagerBirthdayEntry),
+        Provider<SaveManager<BirthdayEntryCategory>>.value(value: saveManagerBirthdayEntryCategory),
+      ],
+      child: const MainApp(),
+    ),
+  );
 }
 
 class MainApp extends StatelessWidget {
@@ -49,8 +39,6 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(
-      home: Scaffold(body: Center(child: Text('Hello World!'))),
-    );
+    return const MaterialApp(home: Scaffold(body: BirthdayListWidget()));
   }
 }
