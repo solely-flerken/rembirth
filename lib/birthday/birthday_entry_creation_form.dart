@@ -55,7 +55,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
 
   void _submitForm() {
     logger.d(
-      'Creation form: Attempting to submit with values ->'
+      'Creation form: Attempting to submit with values -> '
       'name: $_name, '
       'category: ${_category?.name}, '
       'date: $_selectedDate',
