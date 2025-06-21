@@ -6,11 +6,22 @@ import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/save/isar_save_service.dart';
 import 'package:rembirth/save/save_manager.dart';
 import 'package:rembirth/save/save_mode.dart';
+import 'package:rembirth/util/logger.dart';
 
 import 'birthday/birthday_list.dart';
+import 'notifications/notification_service.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  final notificationService = NotificationService();
+
+  notificationService.onNotificationTap = (birthdayId) {
+      logger.d("Tapped on birthday notification with ID: $birthdayId");
+  };
+
+  await notificationService.init();
+  await notificationService.requestPermissions();
 
   await IsarDatabase.open([BirthdayEntrySchema, BirthdayEntryCategorySchema]);
 
@@ -23,11 +34,19 @@ Future<void> main() async {
     saveMode: SaveMode.local,
   );
 
+  final allBirthdays = await saveManagerBirthdayEntry.loadAll();
+  const notificationTime = TimeOfDay(hour: 9, minute: 0);
+  await notificationService.rescheduleAllNotifications(
+    allBirthdays,
+    notificationTime: notificationTime,
+  );
+
   runApp(
     MultiProvider(
       providers: [
         Provider<SaveManager<BirthdayEntry>>.value(value: saveManagerBirthdayEntry),
         Provider<SaveManager<BirthdayEntryCategory>>.value(value: saveManagerBirthdayEntryCategory),
+        Provider<NotificationService>.value(value: notificationService),
       ],
       child: const MainApp(),
     ),

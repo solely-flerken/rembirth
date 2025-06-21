@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rembirth/model/birthday_entry.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
+import 'package:rembirth/notifications/notification_service.dart';
 import 'package:rembirth/save/save_manager.dart';
 
 import '../util/date_util.dart';
@@ -19,6 +20,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   // Managers
   late final SaveManager<BirthdayEntry> _entryManager;
   late final SaveManager<BirthdayEntryCategory> _categoryManager;
+  late final NotificationService _notificationService;
 
   // Data
   Future<Map<String, List<BirthdayEntry>>>? _groupedEntriesFuture;
@@ -39,6 +41,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     _entryManager = context.read<SaveManager<BirthdayEntry>>();
     _categoryManager = context.read<SaveManager<BirthdayEntryCategory>>();
+    _notificationService = context.read<NotificationService>();
 
     _groupedEntriesFuture = _loadGroupedEntries();
   }
@@ -74,10 +77,18 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     return grouped;
   }
 
-  void _syncData() {
+  void _reloadDataAndResyncNotifications() async {
     setState(() {
       _currentGroupedEntries = null; // Clear current data
       _groupedEntriesFuture = _loadGroupedEntries(); // Re-assign the future to trigger reload
+    });
+
+    // Reschedule all notifications in addition (fire and forget)
+    _entryManager.loadAll().then((allBirthdays) {
+      _notificationService.rescheduleAllNotifications(
+        allBirthdays,
+        notificationTime: const TimeOfDay(hour: 9, minute: 0),
+      );
     });
   }
 
@@ -162,10 +173,27 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     if (returnedEntry == null) return;
     _entryManager.save(returnedEntry);
+
+    await _notificationService.scheduleBirthdayNotification(
+      returnedEntry,
+      notificationTime: const TimeOfDay(hour: 9, minute: 0),
+    );
+
+    // Update In-Memory state
+    setState(() {
+      _entries.add(returnedEntry);
+
+      final categoryName = returnedEntry.category ?? 'General';
+      _currentGroupedEntries!.putIfAbsent(categoryName, () => []).add(returnedEntry);
+
+      // Re-sort the affected list
+      _currentGroupedEntries![categoryName]!.sort((a, b) => _compareByDaysUntilBirthday(a, b, today));
+    });
   }
 
   Future<void> _editEntry(BirthdayEntry? entry) async {
     if (entry == null) return;
+    final originalCategory = entry.category ?? 'General';
 
     final returnedEntry = await Navigator.push<BirthdayEntry?>(
       context,
@@ -177,11 +205,53 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     if (returnedEntry == null) return;
     _entryManager.save(returnedEntry);
+
+    await _notificationService.scheduleBirthdayNotification(
+      returnedEntry,
+      notificationTime: const TimeOfDay(hour: 9, minute: 0),
+    );
+
+    // Update In-Memory state
+    setState(() {
+      // Find and remove the old entry from all lists
+      _entries.removeWhere((e) => e.id == returnedEntry.id);
+      _currentGroupedEntries![originalCategory]?.removeWhere((e) => e.id == returnedEntry.id);
+
+      // If the old category group is now empty, remove it
+      if (_currentGroupedEntries![originalCategory]?.isEmpty ?? false) {
+        _currentGroupedEntries!.remove(originalCategory);
+      }
+
+      // Add the updated entry back
+      _entries.add(returnedEntry);
+      final newCategory = returnedEntry.category ?? 'General';
+      _currentGroupedEntries!.putIfAbsent(newCategory, () => []).add(returnedEntry);
+
+      // Re-sort the affected lists
+      _currentGroupedEntries![newCategory]!.sort((a, b) => _compareByDaysUntilBirthday(a, b, today));
+    });
   }
 
-  void _deleteItem() {
+  void _deleteItem() async {
     if (_selectedEntry == null) return;
-    _entryManager.delete(_selectedEntry?.id);
+    final entryToDelete = _selectedEntry!;
+    final categoryName = entryToDelete.category ?? 'General';
+
+    await _notificationService.cancelBirthdayNotification(_selectedEntry!.id);
+    await _entryManager.delete(entryToDelete.id);
+
+    // Update In-Memory state
+    setState(() {
+      _entries.removeWhere((e) => e.id == entryToDelete.id);
+      _currentGroupedEntries![categoryName]?.removeWhere((e) => e.id == entryToDelete.id);
+
+      // If the old category group is now empty, remove it
+      if (_currentGroupedEntries![categoryName]?.isEmpty ?? false) {
+        _currentGroupedEntries!.remove(categoryName);
+      }
+
+      _selectedEntry = null; // Unselect the deleted item
+    });
   }
 
   void _handleEntryTap(BirthdayEntry entry) {
@@ -333,13 +403,21 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
           child: Row(
             mainAxisAlignment: MainAxisAlignment.end,
             children: [
+              // TODO: Remove this button. Only for testing
+              // _buildActionButton(
+              //   icon: Icons.notifications_active,
+              //   onPressed: () => _selectedEntry != null
+              //       ? NotificationService().scheduleBirthdayNotification(_selectedEntry!, testMode: true)
+              //       : null,
+              // ),
+              // const SizedBox(width: 8.0),
               _buildActionButton(icon: Icons.add, onPressed: _addEntry),
               const SizedBox(width: 8.0),
               _buildActionButton(icon: Icons.edit, onPressed: () => _editEntry(_selectedEntry)),
               const SizedBox(width: 8.0),
               _buildActionButton(icon: Icons.delete, onPressed: _deleteItem),
               const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.refresh, onPressed: _syncData),
+              _buildActionButton(icon: Icons.refresh, onPressed: _reloadDataAndResyncNotifications),
               const SizedBox(width: 8.0),
               _buildActionButton(
                 icon: _isCategoryView ? Icons.view_list : Icons.grid_view,
