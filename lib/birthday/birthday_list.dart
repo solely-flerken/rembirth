@@ -4,6 +4,7 @@ import 'package:rembirth/model/birthday_entry.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/notifications/notification_service.dart';
 import 'package:rembirth/save/save_manager.dart';
+import 'package:rembirth/settings/settings_form.dart';
 
 import '../util/date_util.dart';
 import 'birthday_entry.dart';
@@ -262,6 +263,10 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   //#endregion
 
+  void _openSettings() {
+    Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPageWidget()));
+  }
+
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<Map<String, List<BirthdayEntry>>>(
@@ -430,6 +435,8 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
               _buildActionButton(icon: Icons.unfold_more, onPressed: _isCategoryView ? _expandAll : null),
               const SizedBox(width: 8.0),
               _buildActionButton(icon: Icons.unfold_less, onPressed: _isCategoryView ? _collapseAll : null),
+              const SizedBox(width: 8.0),
+              _buildActionButton(icon: Icons.settings, onPressed: _openSettings),
             ],
           ),
         ),
