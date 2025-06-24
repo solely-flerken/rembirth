@@ -14,7 +14,7 @@ class SaveManager<T extends SyncableItem> {
         saveMode != SaveMode.remote || remoteService != null,
         'remoteService must not be null if saveMode is remote',
       ) {
-    logger.d('SaveManager: Initialized with mode: ${saveMode.name}');
+    logger.d('SaveManager<$T>: Initialized with mode: ${saveMode.name}');
   }
 
   Future<void> save(T item) async {
