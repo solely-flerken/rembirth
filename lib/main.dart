@@ -6,10 +6,7 @@ import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/save/isar_save_service.dart';
 import 'package:rembirth/save/save_manager.dart';
 import 'package:rembirth/save/save_mode.dart';
-import 'package:rembirth/settings/setting_constants.dart';
-import 'package:rembirth/util/date_util.dart';
 import 'package:rembirth/util/logger.dart';
-import 'package:shared_preferences/shared_preferences.dart';
 
 import 'birthday/birthday_list.dart';
 import 'notifications/notification_service.dart';
@@ -39,21 +36,8 @@ Future<void> main() async {
   await notificationService.init();
   await notificationService.requestPermissions();
 
-  final prefs = await SharedPreferences.getInstance();
-  final bool notificationsEnabled = prefs.getBool(kNotificationsEnabledKey) ?? true;
-
-  if (notificationsEnabled) {
-    final hour = prefs.getInt('notification_hour') ?? 9;
-    final minute = prefs.getInt('notification_minute') ?? 0;
-    final notificationTime = TimeOfDay(hour: hour, minute: minute);
-
-    logger.i("Notifications are enabled. Scheduling all on startup for ${DateUtil.formatTimeOfDay(notificationTime)}.");
-
-    final allBirthdays = await saveManagerBirthdayEntry.loadAll();
-    await notificationService.rescheduleAllNotifications(allBirthdays, notificationTime: notificationTime);
-  } else {
-    logger.i("Notifications are disabled. Skipping scheduling on startup.");
-  }
+  final allBirthdays = await saveManagerBirthdayEntry.loadAll();
+  notificationService.setupScheduledNotificationsFromPrefs(allBirthdays);
 
   runApp(
     MultiProvider(

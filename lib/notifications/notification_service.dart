@@ -3,10 +3,13 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../model/birthday_entry.dart';
+import '../settings/setting_constants.dart';
+import '../util/date_util.dart';
 import '../util/logger.dart';
 
 class NotificationService {
@@ -47,6 +50,24 @@ class NotificationService {
         }
       },
     );
+  }
+
+  Future<void> setupScheduledNotificationsFromPrefs(List<BirthdayEntry> birthdays) async {
+    final prefs = await SharedPreferences.getInstance();
+    final bool notificationsEnabled = prefs.getBool(kNotificationsEnabledKey) ?? true;
+
+    if (!notificationsEnabled) {
+      logger.i("Notifications are disabled. Skipping scheduling on startup.");
+      return;
+    }
+
+    final hour = prefs.getInt(kNotificationHourKey) ?? 9;
+    final minute = prefs.getInt(kNotificationMinuteKey) ?? 0;
+    final notificationTime = TimeOfDay(hour: hour, minute: minute);
+
+    logger.i("Scheduling all notifications for ${DateUtil.formatTimeOfDay(notificationTime)}");
+
+    await rescheduleAllNotifications(birthdays, notificationTime: notificationTime);
   }
 
   Future<void> scheduleBirthdayNotification(
