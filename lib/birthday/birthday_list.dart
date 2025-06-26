@@ -78,7 +78,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     return grouped;
   }
 
-  void _reloadDataAndResyncNotifications() async {
+  Future<void> _reloadDataAndResyncNotifications() async {
     setState(() {
       _currentGroupedEntries = null; // Clear current data
       _groupedEntriesFuture = _loadGroupedEntries(); // Re-assign the future to trigger reload
@@ -86,10 +86,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     // Reschedule all notifications in addition (fire and forget)
     _entryManager.loadAll().then((allBirthdays) {
-      _notificationService.rescheduleAllNotifications(
-        allBirthdays,
-        notificationTime: const TimeOfDay(hour: 9, minute: 0),
-      );
+      _notificationService.setupScheduledNotificationsFromPrefs(allBirthdays);
     });
   }
 
