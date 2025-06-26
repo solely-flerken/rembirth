@@ -312,7 +312,12 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       child: Column(
         children: [
           _builtActionBar(),
-          Expanded(child: _isCategoryView ? _builtCategoryList(groupKeys, groupedEntries) : _buildFlatList(flatList)),
+          Expanded(
+            child: RefreshIndicator(
+              onRefresh: _reloadDataAndResyncNotifications,
+              child: _isCategoryView ? _builtCategoryList(groupKeys, groupedEntries) : _buildFlatList(flatList),
+            ),
+          ),
         ],
       ),
     );
@@ -422,8 +427,8 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
               ),
               const SizedBox(width: 8.0),
               _buildActionButton(icon: Icons.delete, onPressed: _selectedEntry != null ? _deleteItem : null),
-              const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.refresh, onPressed: _reloadDataAndResyncNotifications),
+              // const SizedBox(width: 8.0),
+              // _buildActionButton(icon: Icons.refresh, onPressed: _reloadDataAndResyncNotifications),
               const SizedBox(width: 8.0),
               _buildActionButton(
                 icon: _isCategoryView ? Icons.view_list : Icons.grid_view,
