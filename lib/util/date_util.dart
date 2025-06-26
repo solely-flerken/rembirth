@@ -1,3 +1,5 @@
+import 'package:flutter/material.dart';
+
 class DateUtil {
   static int daysUntilDate(DateTime from, DateTime to) {
     to = DateTime(from.year, to.month, to.day);
@@ -8,6 +10,12 @@ class DateUtil {
     }
 
     return to.difference(from).inDays;
+  }
+
+  static String formatTimeOfDay(TimeOfDay time) {
+    final hour = time.hour.toString().padLeft(2, '0');
+    final minute = time.minute.toString().padLeft(2, '0');
+    return '$hour:$minute';
   }
 }
 
