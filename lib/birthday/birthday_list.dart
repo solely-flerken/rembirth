@@ -6,6 +6,7 @@ import 'package:rembirth/notifications/notification_service.dart';
 import 'package:rembirth/save/save_manager.dart';
 import 'package:rembirth/settings/settings_form.dart';
 
+import '../settings/settings_util.dart';
 import '../util/date_util.dart';
 import 'birthday_entry.dart';
 import 'birthday_entry_creation_form.dart';
@@ -174,7 +175,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     await _notificationService.scheduleBirthdayNotification(
       returnedEntry,
-      notificationTime: const TimeOfDay(hour: 9, minute: 0),
+      notificationTime: await SettingsUtil.getNotificationTime(),
     );
 
     // Update In-Memory state
@@ -206,7 +207,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     await _notificationService.scheduleBirthdayNotification(
       returnedEntry,
-      notificationTime: const TimeOfDay(hour: 9, minute: 0),
+      notificationTime: await SettingsUtil.getNotificationTime(),
     );
 
     // Update In-Memory state
