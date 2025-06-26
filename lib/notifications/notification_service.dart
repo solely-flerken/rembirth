@@ -114,6 +114,11 @@ class NotificationService {
     }
   }
 
+  Future<void> cancelAllNotifications() async {
+    await _plugin.cancelAll();
+    logger.i("Cancelled all scheduled notifications.");
+  }
+
   Future<void> _initializeTimeZone() async {
     tz.initializeTimeZones();
     final String timeZoneName = await FlutterTimezone.getLocalTimezone();
