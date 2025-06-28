@@ -142,6 +142,8 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     return Dialog(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
       child: SizedBox(
@@ -206,7 +208,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
                     _category = value;
                   });
                 },
-                style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20, color: Colors.black),
+                style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20, color: theme.colorScheme.onSurface),
                 decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
                 dropdownStyleData: DropdownStyleData(decoration: BoxDecoration(borderRadius: BorderRadius.circular(8))),
               ),

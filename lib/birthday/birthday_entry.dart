@@ -24,6 +24,8 @@ class BirthdayEntryTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final theme = Theme.of(context);
+
     final now = DateTime.now();
     final int? year = entry.year;
     final int month = entry.month ?? 1;
@@ -40,10 +42,10 @@ class BirthdayEntryTile extends StatelessWidget {
     final birthdayString = year != null ? "$day $monthName $year" : "$day $monthName";
 
     return Card(
-      color: isSelected ? Colors.blue.shade100 : null,
+      color: isSelected ? theme.colorScheme.primaryContainer : null,
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: ListTile(
-        leading: const Icon(Icons.cake, color: Colors.black),
+        leading: Icon(Icons.cake, color: theme.colorScheme.primary),
         title: Text(entry.name ?? "Unnamed", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
