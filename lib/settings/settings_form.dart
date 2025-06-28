@@ -1,142 +1,78 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rembirth/settings/setting_constants.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:rembirth/settings/settings_controller.dart';
 
-import '../model/birthday_entry.dart';
-import '../notifications/notification_service.dart';
-import '../save/save_manager.dart';
-import '../util/logger.dart';
-
-class SettingsPageWidget extends StatefulWidget {
+class SettingsPageWidget extends StatelessWidget {
   const SettingsPageWidget({super.key});
 
   @override
-  State<SettingsPageWidget> createState() => _SettingsPageState();
-}
-
-class _SettingsPageState extends State<SettingsPageWidget> {
-  String? _statusMessage;
-
-  bool _notificationsEnabled = true;
-  TimeOfDay _notificationTime = const TimeOfDay(hour: 9, minute: 0);
-
-  @override
-  void initState() {
-    super.initState();
-    _loadSettings();
-  }
-
-  Future<void> _loadSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    setState(() {
-      _notificationsEnabled = prefs.getBool(kNotificationsEnabledKey) ?? true;
-
-      final hour = prefs.getInt(kNotificationHourKey) ?? _notificationTime.hour;
-      final minute = prefs.getInt(kNotificationMinuteKey) ?? _notificationTime.minute;
-      _notificationTime = TimeOfDay(hour: hour, minute: minute);
-    });
-  }
-
-  Future<void> _saveSettings() async {
-    final prefs = await SharedPreferences.getInstance();
-    await prefs.setBool(kNotificationsEnabledKey, _notificationsEnabled);
-    await prefs.setInt(kNotificationHourKey, _notificationTime.hour);
-    await prefs.setInt(kNotificationMinuteKey, _notificationTime.minute);
-  }
-
-  void _updateStatus(String? message) {
-    setState(() {
-      _statusMessage = message;
-    });
-
-    if (_statusMessage != null) {
-      WidgetsBinding.instance.addPostFrameCallback((_) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(_statusMessage!),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 6,
-          ),
-        );
-
-        _updateStatus(null);
-      });
-    }
-  }
-
-  Future<void> _pickNotificationTime() async {
-    final picked = await showTimePicker(context: context, initialTime: _notificationTime);
-
-    if (picked != null) {
-      setState(() {
-        _notificationTime = picked;
-      });
-
-      await _saveSettings();
-
-      if (!mounted) return;
-
-      logger.i("Notification time changed. Rescheduling all birthdays...");
-
-      final notificationService = Provider.of<NotificationService>(context, listen: false);
-      final birthdaySaveManager = Provider.of<SaveManager<BirthdayEntry>>(context, listen: false);
-
-      final allBirthdays = await birthdaySaveManager.loadAll();
-
-      await notificationService.rescheduleAllNotifications(allBirthdays, notificationTime: _notificationTime);
-
-      if (!mounted) return;
-
-      _updateStatus("Notification time set to ${picked.format(context)}");
-    }
-  }
-
-  Future<void> _notificationsEnabledChanged(bool isEnabled) async {
-    setState(() {
-      _notificationsEnabled = isEnabled;
-    });
-
-    _saveSettings();
-
-    final notificationService = Provider.of<NotificationService>(context, listen: false);
-    final birthdaySaveManager = Provider.of<SaveManager<BirthdayEntry>>(context, listen: false);
-
-    if (isEnabled) {
-      logger.i("Enabling notifications. Rescheduling all birthdays...");
-
-      final allBirthdays = await birthdaySaveManager.loadAll();
-      await notificationService.rescheduleAllNotifications(allBirthdays, notificationTime: _notificationTime);
-    } else {
-      logger.i("Disabling notifications. Cancelling all...");
-
-      await notificationService.cancelAllNotifications();
-    }
-
-    _updateStatus("Notifications ${isEnabled ? "enabled" : "disabled"}");
-  }
-
-  @override
   Widget build(BuildContext context) {
+    void showStatus(String message) {
+      if (message.isEmpty) return;
+
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 6,
+        ),
+      );
+    }
+    
+    final settingsController = context.watch<SettingsController>();
+
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
+          // --- Dark Mode Toggle ---
+          SwitchListTile(
+            title: const Text('Dark Mode'),
+            value: settingsController.settings.isDarkMode,
+            onChanged: (isEnabled) {
+              context.read<SettingsController>().setDarkModeEnabled(isEnabled);
+              showStatus('Switched to ${isEnabled ? "Dark Mode" : "Light Mode"}');
+            },
+          ),
+
+          // --- Notifications Toggle ---
+          const Divider(),
           SwitchListTile(
             title: const Text('Enable Notifications'),
-            value: _notificationsEnabled,
-            onChanged: _notificationsEnabledChanged,
+            value: settingsController.settings.notificationsEnabled,
+            onChanged: (isEnabled) async {
+              await context.read<SettingsController>().setNotificationsEnabled(isEnabled);
+              showStatus('Notifications ${isEnabled ? "enabled" : "disabled"}');
+            },
           ),
+
+          // --- Notification Time Picker ---
           ListTile(
             title: const Text('Notification Time'),
-            subtitle: Text(_notificationTime.format(context)),
+            subtitle: Text(settingsController.settings.notificationTime.format(context)),
             trailing: const Icon(Icons.schedule, size: 32),
-            onTap: _notificationsEnabled ? _pickNotificationTime : null,
+            enabled: settingsController.settings.notificationsEnabled,
+            onTap: () async {
+              final pickedTime = await showTimePicker(
+                context: context,
+                initialTime: settingsController.settings.notificationTime,
+              );
+
+              if (!context.mounted) return;
+
+              if (pickedTime != null) {
+                await context.read<SettingsController>().updateNotificationTime(pickedTime);
+                if (!context.mounted) return;
+                showStatus('Notification time set to ${pickedTime.format(context)}');
+              }
+            },
           ),
+
+          // --- About ---
           const Divider(),
           ListTile(title: const Text('About'), subtitle: const Text('Rembirth v1.0.0'), onTap: () => {}),
         ],

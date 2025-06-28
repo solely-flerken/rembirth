@@ -6,6 +6,9 @@ import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/save/isar_save_service.dart';
 import 'package:rembirth/save/save_manager.dart';
 import 'package:rembirth/save/save_mode.dart';
+import 'package:rembirth/settings/settings_controller.dart';
+import 'package:rembirth/settings/settings_model.dart';
+import 'package:rembirth/settings/settings_service.dart';
 import 'package:rembirth/util/logger.dart';
 
 import 'birthday/birthday_list.dart';
@@ -17,6 +20,7 @@ Future<void> main() async {
   // Initialize database
   await IsarDatabase.open([BirthdayEntrySchema, BirthdayEntryCategorySchema]);
 
+  // Create services
   final birthdayEntryService = IsarSaveService<BirthdayEntry>();
   final birthdayEntryCategoryService = IsarSaveService<BirthdayEntryCategory>();
 
@@ -26,15 +30,22 @@ Future<void> main() async {
     saveMode: SaveMode.local,
   );
 
-  // Notifications
   final notificationService = NotificationService();
 
+  // Load settings from SharedPreferences
+  final settings = await SettingsService.loadSettings();
+  final settingsController = SettingsController(
+    settings: settings,
+    notificationService: notificationService,
+    birthdaySaveManager: saveManagerBirthdayEntry,
+  );
+
+  // Notifications setup
+  await notificationService.init();
+  await notificationService.requestPermissions();
   notificationService.onNotificationTap = (birthdayId) {
     logger.d("Tapped on birthday notification with ID: $birthdayId");
   };
-
-  await notificationService.init();
-  await notificationService.requestPermissions();
 
   final allBirthdays = await saveManagerBirthdayEntry.loadAll();
   notificationService.setupScheduledNotificationsFromPrefs(allBirthdays);
@@ -45,6 +56,9 @@ Future<void> main() async {
         Provider<SaveManager<BirthdayEntry>>.value(value: saveManagerBirthdayEntry),
         Provider<SaveManager<BirthdayEntryCategory>>.value(value: saveManagerBirthdayEntryCategory),
         Provider<NotificationService>.value(value: notificationService),
+        Provider<Settings>.value(value: settings),
+
+        ChangeNotifierProvider<SettingsController>.value(value: settingsController),
       ],
       child: const MainApp(),
     ),
