@@ -70,6 +70,13 @@ class MainApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return const MaterialApp(home: Scaffold(body: BirthdayListWidget()));
+    final settingsController = context.watch<SettingsController>();
+
+    return MaterialApp(
+      themeMode: settingsController.settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      darkTheme: ThemeData.dark(),
+      theme: ThemeData.light(),
+      home: const Scaffold(body: BirthdayListWidget()),
+    );
   }
 }
