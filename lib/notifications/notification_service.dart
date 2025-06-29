@@ -8,7 +8,7 @@ import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 
 import '../model/birthday_entry.dart';
-import '../settings/setting_constants.dart';
+import '../settings/settings_constants.dart';
 import '../util/date_util.dart';
 import '../util/logger.dart';
 
