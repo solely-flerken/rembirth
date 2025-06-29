@@ -14,6 +14,15 @@ class Settings {
     required this.notificationTimeMinute,
   });
 
+  factory Settings.defaults() {
+    return Settings(
+      theme: ThemeSetting.system,
+      notificationsEnabled: true,
+      notificationTimeHour: 9,
+      notificationTimeMinute: 0,
+    );
+  }
+
   /// Returns the stored time as a TimeOfDay object
   TimeOfDay get notificationTime => TimeOfDay(hour: notificationTimeHour, minute: notificationTimeMinute);
 

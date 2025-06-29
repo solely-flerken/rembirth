@@ -97,6 +97,20 @@ class SettingsPageWidget extends StatelessWidget {
           // --- About ---
           const Divider(),
           ListTile(title: const Text('About'), subtitle: const Text('Rembirth v1.0.0'), onTap: () => {}),
+
+          // --- Restore Defaults ---
+          const Divider(),
+          ListTile(
+            title: const Text(
+              'Restore Defaults',
+              style: TextStyle(color: Colors.red),
+            ),
+            trailing: const Icon(Icons.restore, color: Colors.red, size: 32),
+            onTap: () async {
+              await context.read<SettingsController>().restoreDefaults();
+              showStatus('Restored default settings');
+            },
+          ),
         ],
       ),
     );

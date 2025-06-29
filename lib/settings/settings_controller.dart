@@ -24,10 +24,10 @@ class SettingsController extends ChangeNotifier {
 
   Settings get settings => _settings;
 
-  void setTheme(ThemeSetting theme) {
+  Future<void> setTheme(ThemeSetting theme) async {
     if (_settings.theme == theme) return;
     _settings.theme = theme;
-    _saveAndNotify();
+    await _saveAndNotify();
   }
 
   Future<void> setNotificationsEnabled(bool enabled) async {
@@ -49,6 +49,8 @@ class SettingsController extends ChangeNotifier {
   }
 
   Future<void> updateNotificationTime(TimeOfDay newTime) async {
+    if (_settings.notificationTime == newTime || !_settings.notificationsEnabled) return;
+
     _settings.notificationTimeHour = newTime.hour;
     _settings.notificationTimeMinute = newTime.minute;
 
@@ -57,6 +59,31 @@ class SettingsController extends ChangeNotifier {
     final allBirthdays = await _birthdaySaveManager.loadAll();
     await _notificationService.rescheduleAllNotifications(allBirthdays, notificationTime: newTime);
 
+    await _saveAndNotify();
+  }
+
+  Future<void> restoreDefaults() async {
+    final defaultSettings = Settings.defaults();
+
+    final shouldRescheduleNotifications = _settings.notificationTime != defaultSettings.notificationTime;
+
+    _settings.theme = defaultSettings.theme;
+    _settings.notificationsEnabled = defaultSettings.notificationsEnabled;
+    _settings.notificationTimeHour = defaultSettings.notificationTimeHour;
+    _settings.notificationTimeMinute = defaultSettings.notificationTimeMinute;
+
+    if (_settings.notificationsEnabled && shouldRescheduleNotifications) {
+      logger.i("Restoring defaults: Notifications are enabled, rescheduling...");
+      final allBirthdays = await _birthdaySaveManager.loadAll();
+      await _notificationService.rescheduleAllNotifications(allBirthdays, notificationTime: _settings.notificationTime);
+    } else if (_settings.notificationsEnabled && !shouldRescheduleNotifications) {
+      logger.i("Restoring defaults: Default notification settings already used...");
+    } else {
+      logger.i("Restoring defaults: Notifications are disabled, cancelling all...");
+      await _notificationService.cancelAllNotifications();
+    }
+
+    await SettingsService.clearSettings();
     await _saveAndNotify();
   }
 

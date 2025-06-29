@@ -6,14 +6,15 @@ import 'package:shared_preferences/shared_preferences.dart';
 class SettingsService {
   static Future<Settings> loadSettings() async {
     final prefs = await SharedPreferences.getInstance();
+    final defaultSettings = Settings.defaults();
 
-    final themeName = prefs.getString(kTheme) ?? ThemeSetting.system.name;
+    final themeName = prefs.getString(kTheme) ?? defaultSettings.theme.name;
 
     return Settings(
-      theme: ThemeSetting.values.firstWhere((e) => e.name == themeName, orElse: () => ThemeSetting.system),
-      notificationsEnabled: prefs.getBool(kNotificationsEnabledKey) ?? true,
-      notificationTimeHour: prefs.getInt(kNotificationHourKey) ?? 9,
-      notificationTimeMinute: prefs.getInt(kNotificationMinuteKey) ?? 0,
+      theme: ThemeSetting.values.firstWhere((e) => e.name == themeName, orElse: () => defaultSettings.theme),
+      notificationsEnabled: prefs.getBool(kNotificationsEnabledKey) ?? defaultSettings.notificationsEnabled,
+      notificationTimeHour: prefs.getInt(kNotificationHourKey) ?? defaultSettings.notificationTime.hour,
+      notificationTimeMinute: prefs.getInt(kNotificationMinuteKey) ?? defaultSettings.notificationTime.minute,
     );
   }
 
@@ -24,5 +25,10 @@ class SettingsService {
     await prefs.setBool(kNotificationsEnabledKey, settings.notificationsEnabled);
     await prefs.setInt(kNotificationHourKey, settings.notificationTimeHour);
     await prefs.setInt(kNotificationMinuteKey, settings.notificationTimeMinute);
+  }
+
+  static Future<void> clearSettings() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear();
   }
 }
