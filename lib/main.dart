@@ -73,7 +73,7 @@ class MainApp extends StatelessWidget {
     final settingsController = context.watch<SettingsController>();
 
     return MaterialApp(
-      themeMode: settingsController.settings.isDarkMode ? ThemeMode.dark : ThemeMode.light,
+      themeMode: settingsController.settings.themeMode,
       darkTheme: ThemeData.dark(),
       theme: ThemeData.light(),
       home: const Scaffold(body: BirthdayListWidget()),

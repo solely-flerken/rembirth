@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:rembirth/settings/settings_model.dart';
 import 'package:rembirth/settings/settings_service.dart';
+import 'package:rembirth/settings/themes.dart';
 
 import '../model/birthday_entry.dart';
 import '../notifications/notification_service.dart';
@@ -23,9 +24,9 @@ class SettingsController extends ChangeNotifier {
 
   Settings get settings => _settings;
 
-  void setDarkModeEnabled(bool enabled) {
-    if (_settings.isDarkMode == enabled) return;
-    _settings.isDarkMode = enabled;
+  void setTheme(ThemeSetting theme) {
+    if (_settings.theme == theme) return;
+    _settings.theme = theme;
     _saveAndNotify();
   }
 

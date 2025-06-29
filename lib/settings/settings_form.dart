@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rembirth/settings/settings_controller.dart';
+import 'package:rembirth/settings/themes.dart';
 
 class SettingsPageWidget extends StatelessWidget {
   const SettingsPageWidget({super.key});
@@ -31,14 +32,33 @@ class SettingsPageWidget extends StatelessWidget {
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
-          // --- Dark Mode Toggle ---
-          SwitchListTile(
-            title: const Text('Dark Mode'),
-            value: settingsController.settings.isDarkMode,
-            onChanged: (isEnabled) {
-              context.read<SettingsController>().setDarkModeEnabled(isEnabled);
-              showStatus('Switched to ${isEnabled ? "Dark Mode" : "Light Mode"}');
-            },
+          // --- Themes ---
+          ListTile(
+            title: const Text('Theme'),
+            subtitle: SegmentedButton<ThemeSetting>(
+              segments: const <ButtonSegment<ThemeSetting>>[
+                ButtonSegment<ThemeSetting>(
+                  value: ThemeSetting.light,
+                  label: Text('Light'),
+                  icon: Icon(Icons.wb_sunny_outlined),
+                ),
+                ButtonSegment<ThemeSetting>(
+                  value: ThemeSetting.dark,
+                  label: Text('Dark'),
+                  icon: Icon(Icons.nightlight_round),
+                ),
+                ButtonSegment<ThemeSetting>(
+                  value: ThemeSetting.system,
+                  label: Text('System'),
+                  icon: Icon(Icons.brightness_auto_outlined),
+                ),
+              ],
+              selected: <ThemeSetting>{settingsController.settings.theme},
+              onSelectionChanged: (Set<ThemeSetting> newSelection) {
+                context.read<SettingsController>().setTheme(newSelection.first);
+                showStatus('Switched to ${newSelection.first.name} theme');
+              },
+            ),
           ),
 
           // --- Notifications Toggle ---
