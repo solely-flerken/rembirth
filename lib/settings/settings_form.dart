@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/settings/settings_controller.dart';
 import 'package:rembirth/settings/themes.dart';
+
+import '../model/birthday_entry_category.dart';
+import '../save/save_manager.dart';
 
 class SettingsPageWidget extends StatelessWidget {
   const SettingsPageWidget({super.key});
@@ -26,6 +30,7 @@ class SettingsPageWidget extends StatelessWidget {
     }
 
     final settingsController = context.watch<SettingsController>();
+    final categoryManager = context.read<SaveManager<BirthdayEntryCategory>>();
 
     return Scaffold(
       appBar: AppBar(title: const Text('Settings')),
@@ -94,6 +99,56 @@ class SettingsPageWidget extends StatelessWidget {
             },
           ),
 
+          const Divider(),
+          ListTile(
+            title: Text('Categories'),
+            trailing: const Icon(Icons.add_circle_outline, size: 32),
+            onTap: () async {
+              // TODO: Open category creation form
+              final newCategory = BirthdayEntryCategory()
+                ..id = IsarDatabase.instance.birthdayEntryCategorys.autoIncrement()
+                ..name = 'Test Category';
+
+              await categoryManager.save(newCategory);
+              showStatus('Added category "${newCategory.name}"');
+            },
+          ),
+
+          FutureBuilder(
+            future: categoryManager.loadAll(),
+            builder: (context, snapshot) {
+              if (!snapshot.hasData) {
+                return const Center(child: CircularProgressIndicator());
+              }
+
+              final categories = snapshot.data!;
+
+              if (categories.isEmpty) {
+                return const ListTile(
+                  title: Text('No categories yet.'),
+                  subtitle: Text('Tap the "+" icon above to add a category.'),
+                );
+              }
+
+              return ListTile(
+                subtitle: Wrap(
+                  spacing: 8.0,
+                  runSpacing: 4.0,
+                  children: categories.map((category) {
+                    return Chip(
+                      label: Text(category.name!),
+                      deleteIcon: const Icon(Icons.close),
+                      onDeleted: () async {
+                        await categoryManager.delete(category.id);
+                        showStatus('Deleted category: "${category.name}"');
+                      },
+                    );
+                  }).toList(),
+                ),
+              );
+            },
+          ),
+
           // --- About ---
           const Divider(),
           ListTile(title: const Text('About'), subtitle: const Text('Rembirth v1.0.0'), onTap: () => {}),
@@ -101,10 +156,7 @@ class SettingsPageWidget extends StatelessWidget {
           // --- Restore Defaults ---
           const Divider(),
           ListTile(
-            title: const Text(
-              'Restore Defaults',
-              style: TextStyle(color: Colors.red),
-            ),
+            title: const Text('Restore Defaults', style: TextStyle(color: Colors.red)),
             trailing: const Icon(Icons.restore, color: Colors.red, size: 32),
             onTap: () async {
               await context.read<SettingsController>().restoreDefaults();
