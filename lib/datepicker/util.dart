@@ -13,7 +13,7 @@ const Map<int, String> months = {
   DateTime.december: 'December',
 };
 
-const List<String> weekdays = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
+const List<String> weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 enum DatePickerStep {
   info(0),
