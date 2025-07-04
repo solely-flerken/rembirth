@@ -105,7 +105,7 @@ class _DatePickerInfoWidgetState extends State<DatePickerInfoWidget> {
               padding: EdgeInsets.only(bottom: 16),
               child: Text(
                 'Tap day, month, or year to change the selection',
-                style: TextStyle(fontSize: 14, color: Color.fromRGBO(0, 0, 0, 0.7)),
+                style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.center,
               ),
             ),
