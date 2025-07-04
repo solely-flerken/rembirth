@@ -1,34 +1,56 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
-import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/settings/settings_controller.dart';
 import 'package:rembirth/settings/themes.dart';
 
+import '../birthday/birthday_entry_category_creation_form.dart';
 import '../model/birthday_entry_category.dart';
 import '../save/save_manager.dart';
 
-class SettingsPageWidget extends StatelessWidget {
+class SettingsPageWidget extends StatefulWidget {
   const SettingsPageWidget({super.key});
 
   @override
+  State<SettingsPageWidget> createState() => _SettingsPageWidgetState();
+}
+
+class _SettingsPageWidgetState extends State<SettingsPageWidget> {
+  void showStatus(String message) {
+    if (message.isEmpty || !mounted) return;
+
+    ScaffoldMessenger.of(context)
+      ..removeCurrentSnackBar()
+      ..showSnackBar(
+        SnackBar(
+          content: Text(message),
+          duration: const Duration(seconds: 2),
+          behavior: SnackBarBehavior.floating,
+          margin: const EdgeInsets.all(16),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          elevation: 6,
+        ),
+      );
+  }
+
+  Future<void> _handleCategoryTap(SaveManager<BirthdayEntryCategory> categoryManager, BirthdayEntryCategory? category) async {
+    final newCategory = await showDialog<BirthdayEntryCategory>(
+      context: context,
+      builder: (context) => BirthdayEntryCategoryCreationForm(initialCategory: category),
+    );
+
+    if (newCategory == null) return;
+
+    await categoryManager.save(newCategory);
+    showStatus('Added category "${newCategory.name}"');
+  }
+
+  Future<void> _handleCategoryDelete(SaveManager<BirthdayEntryCategory> categoryManager, BirthdayEntryCategory category) async {
+    await categoryManager.delete(category.id);
+    showStatus('Deleted category: "${category.name}"');
+  }
+
+  @override
   Widget build(BuildContext context) {
-    void showStatus(String message) {
-      if (message.isEmpty) return;
-
-      ScaffoldMessenger.of(context)
-        ..removeCurrentSnackBar()
-        ..showSnackBar(
-          SnackBar(
-            content: Text(message),
-            duration: const Duration(seconds: 2),
-            behavior: SnackBarBehavior.floating,
-            margin: const EdgeInsets.all(16),
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            elevation: 6,
-          ),
-        );
-    }
-
     final settingsController = context.watch<SettingsController>();
     final categoryManager = context.read<SaveManager<BirthdayEntryCategory>>();
 
@@ -99,19 +121,12 @@ class SettingsPageWidget extends StatelessWidget {
             },
           ),
 
+          // --- Categories ---
           const Divider(),
           ListTile(
             title: Text('Categories'),
             trailing: const Icon(Icons.add_circle_outline, size: 32),
-            onTap: () async {
-              // TODO: Open category creation form
-              final newCategory = BirthdayEntryCategory()
-                ..id = IsarDatabase.instance.birthdayEntryCategorys.autoIncrement()
-                ..name = 'Test Category';
-
-              await categoryManager.save(newCategory);
-              showStatus('Added category "${newCategory.name}"');
-            },
+            onTap: () => _handleCategoryTap(categoryManager, null),
           ),
 
           FutureBuilder(
@@ -121,7 +136,14 @@ class SettingsPageWidget extends StatelessWidget {
                 return const Center(child: CircularProgressIndicator());
               }
 
-              final categories = snapshot.data!;
+              if (snapshot.hasError) {
+                return ListTile(
+                  title: const Text('Error loading categories'),
+                  subtitle: Text(snapshot.error.toString()),
+                );
+              }
+
+              final categories = snapshot.data ?? [];
 
               if (categories.isEmpty) {
                 return const ListTile(
@@ -135,13 +157,25 @@ class SettingsPageWidget extends StatelessWidget {
                   spacing: 8.0,
                   runSpacing: 4.0,
                   children: categories.map((category) {
-                    return Chip(
-                      label: Text(category.name!),
-                      deleteIcon: const Icon(Icons.close),
-                      onDeleted: () async {
-                        await categoryManager.delete(category.id);
-                        showStatus('Deleted category: "${category.name}"');
-                      },
+                    final categoryColor = category.color;
+                    final textColor = ThemeData.estimateBrightnessForColor(categoryColor!) == Brightness.dark
+                        ? Colors.white
+                        : Colors.black;
+
+                    return Material(
+                      color: Colors.transparent,
+                      child: InkWell(
+                        borderRadius: BorderRadius.circular(16),
+                        onTap: () => _handleCategoryTap(categoryManager, category),
+                        child: Chip(
+                          label: Text(category.name!, style: TextStyle(color: textColor, fontSize: 16)),
+                          backgroundColor: categoryColor,
+                          shape: RoundedRectangleBorder(side: BorderSide.none, borderRadius: BorderRadius.circular(12)),
+                          deleteIcon: const Icon(Icons.close, size: 20),
+                          deleteIconColor: textColor,
+                          onDeleted: () => _handleCategoryDelete(categoryManager, category)
+                        ),
+                      ),
                     );
                   }).toList(),
                 ),
