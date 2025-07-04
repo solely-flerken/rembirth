@@ -155,17 +155,14 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
       return [const TextSpan(text: 'Info')];
     }
 
-    if (selectedMonth == null) {
-      return [const TextSpan(text: 'Select a date')];
-    }
-
-    final monthName = months[selectedMonth!]!;
     final highlightColor = Theme.of(context).colorScheme.primary;
 
-    return [
-      if (selectedDay != null)
+    final List<TextSpan> parts = [];
+
+    if (selectedDay != null) {
+      parts.add(
         TextSpan(
-          text: '$selectedDay ',
+          text: '$selectedDay',
           style: TextStyle(color: currentDatePickerStep == DatePickerStep.day ? highlightColor : null),
           recognizer: TapGestureRecognizer()
             ..onTap = () {
@@ -174,25 +171,51 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
               }
             },
         ),
-      TextSpan(
-        text: '$monthName ',
-        style: TextStyle(color: currentDatePickerStep == DatePickerStep.month ? highlightColor : null),
-        recognizer: TapGestureRecognizer()
-          ..onTap = () {
-            if (selectedYear != null) {
-              _controller.jumpToPage(DatePickerStep.month.pageIndex);
-            }
-          },
-      ),
-      TextSpan(
-        text: selectedYear != null ? '$selectedYear' : '',
-        style: TextStyle(color: currentDatePickerStep == DatePickerStep.year ? highlightColor : null),
-        recognizer: TapGestureRecognizer()
-          ..onTap = () {
-            _controller.jumpToPage(DatePickerStep.year.pageIndex);
-          },
-      ),
-    ];
+      );
+    }
+
+    if (selectedMonth != null) {
+      parts.add(
+        TextSpan(
+          text: months[selectedMonth!]!,
+          style: TextStyle(color: currentDatePickerStep == DatePickerStep.month ? highlightColor : null),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              if (selectedYear != null) {
+                _controller.jumpToPage(DatePickerStep.month.pageIndex);
+              }
+            },
+        ),
+      );
+    }
+
+    if (selectedYear != null) {
+      parts.add(
+        TextSpan(
+          text: '$selectedYear',
+          style: TextStyle(color: currentDatePickerStep == DatePickerStep.year ? highlightColor : null),
+          recognizer: TapGestureRecognizer()
+            ..onTap = () {
+              _controller.jumpToPage(DatePickerStep.year.pageIndex);
+            },
+        ),
+      );
+    }
+
+    // No parts were added, nothing is selected
+    if (parts.isEmpty) {
+      return [const TextSpan(text: 'Select a date')];
+    }
+
+    final List<TextSpan> finalSpans = [];
+    for (int i = 0; i < parts.length; i++) {
+      finalSpans.add(parts[i]);
+      if (i < parts.length - 1) {
+        finalSpans.add(const TextSpan(text: ' '));
+      }
+    }
+
+    return finalSpans;
   }
 
   @override
