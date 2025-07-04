@@ -118,9 +118,13 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   void _onYearSelected(int? year) {
     setState(() {
       selectedYear = year;
-      final maxDay = DateUtils.getDaysInMonth(selectedYear ?? 2000, selectedMonth ?? 1);
-      if (selectedDay == null || selectedDay! > maxDay) {
-        selectedDay = maxDay;
+
+      // Clamp day to valid date for new month/year
+      if (selectedMonth != null && selectedDay != null) {
+        final maxDay = DateUtils.getDaysInMonth(selectedYear ?? 2000, selectedMonth ?? 1);
+        if (selectedDay! > maxDay) {
+          selectedDay = maxDay;
+        }
       }
     });
     _nextPage();
@@ -129,10 +133,13 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   void _onMonthSelected(int month) {
     setState(() {
       selectedMonth = month;
-      // Clamp day to valid range for new month/year
-      final maxDay = DateUtils.getDaysInMonth(selectedYear ?? 2000, selectedMonth!);
-      if (selectedDay == null || selectedDay! > maxDay) {
-        selectedDay = maxDay;
+
+      // Clamp day to valid date for new month
+      if (selectedDay != null) {
+        final maxDay = DateUtils.getDaysInMonth(selectedYear ?? 2000, month);
+        if (selectedDay! > maxDay) {
+          selectedDay = maxDay;
+        }
       }
     });
     _nextPage();
