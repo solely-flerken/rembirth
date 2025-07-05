@@ -1,3 +1,4 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:rembirth/model/birthday_entry.dart';
@@ -25,11 +26,9 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   late final NotificationService _notificationService;
 
   // Data
-  Future<Map<String, List<BirthdayEntry>>>? _groupedEntriesFuture;
-  Map<String, List<BirthdayEntry>>? _currentGroupedEntries;
   List<BirthdayEntry> _entries = [];
-  BirthdayEntry? _selectedEntry;
   List<BirthdayEntryCategory> _categories = [];
+  int? _selectedEntryId;
 
   // UI
   final Map<String, bool> _expandedStates = {};
@@ -40,31 +39,22 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   @override
   void initState() {
     super.initState();
-
     _entryManager = context.read<SaveManager<BirthdayEntry>>();
     _categoryManager = context.read<SaveManager<BirthdayEntryCategory>>();
     _notificationService = context.read<NotificationService>();
-
-    _groupedEntriesFuture = _loadGroupedEntries();
   }
 
   //#region Data
 
-  /// Loads all birthday entries and categories, then groups the entries by their
-  /// associated category.
-  ///
-  /// If an entry has no category or its category does not exist in the loaded
-  /// categories, it is assigned to a default "General" category.
-  Future<Map<String, List<BirthdayEntry>>> _loadGroupedEntries() async {
-    _entries = await _entryManager.loadAll();
-    _categories = await _categoryManager.loadAll();
-
+  /// Groups a list of birthday entries by category.
+  Map<String, List<BirthdayEntry>> _groupEntries(
+      List<BirthdayEntry> entries, List<BirthdayEntryCategory> categories) {
     final Map<String, List<BirthdayEntry>> grouped = {};
 
-    for (var entry in _entries) {
+    for (var entry in entries) {
       var entryCategory = entry.category;
 
-      if (entryCategory == null || !_categories.any((x) => x.name == entryCategory)) {
+      if (entryCategory == null || !categories.any((x) => x.name == entryCategory)) {
         entryCategory = 'General';
       }
 
@@ -75,20 +65,12 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       grouped[category]!.sort((a, b) => _compareByDaysUntilBirthday(a, b, today));
     }
 
-    // List containing all birthday entries grouped by their category
     return grouped;
   }
 
-  Future<void> _reloadDataAndResyncNotifications() async {
-    setState(() {
-      _currentGroupedEntries = null; // Clear current data
-      _groupedEntriesFuture = _loadGroupedEntries(); // Re-assign the future to trigger reload
-    });
-
-    // Reschedule all notifications in addition (fire and forget)
-    _entryManager.loadAll().then((allBirthdays) {
-      _notificationService.setupScheduledNotificationsFromPrefs(allBirthdays);
-    });
+  Future<void> _handleRefresh() async {
+    // TODO: Currently just a placebo refresh
+    await _notificationService.setupScheduledNotificationsFromPrefs(_entries);
   }
 
   List<BirthdayEntry> _getSortedFlatList() {
@@ -117,19 +99,15 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     });
   }
 
-  void _expandAll() {
-    if (_currentGroupedEntries == null) return;
-
+  void _expandAll(Iterable<String> categoryKeys) {
     setState(() {
-      _expandedStates.addEntries(_currentGroupedEntries!.keys.map((key) => MapEntry(key, true)));
+      _expandedStates.addEntries(categoryKeys.map((key) => MapEntry(key, true)));
     });
   }
 
-  void _collapseAll() {
-    if (_currentGroupedEntries == null) return;
-
+  void _collapseAll(Iterable<String> categoryKeys) {
     setState(() {
-      _expandedStates.addEntries(_currentGroupedEntries!.keys.map((key) => MapEntry(key, false)));
+      _expandedStates.addEntries(categoryKeys.map((key) => MapEntry(key, false)));
     });
   }
 
@@ -171,6 +149,12 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     );
 
     if (returnedEntry == null) return;
+
+    setState(() {
+      _entries.add(returnedEntry);
+      _selectedEntryId = returnedEntry.id;
+    });
+
     _entryManager.save(returnedEntry);
 
     if(!mounted) return;
@@ -180,32 +164,31 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       returnedEntry,
       notificationTime: notificationTime,
     );
-
-    // Update In-Memory state
-    setState(() {
-      _entries.add(returnedEntry);
-
-      final categoryName = returnedEntry.category ?? 'General';
-      _currentGroupedEntries!.putIfAbsent(categoryName, () => []).add(returnedEntry);
-
-      // Re-sort the affected list
-      _currentGroupedEntries![categoryName]!.sort((a, b) => _compareByDaysUntilBirthday(a, b, today));
-    });
   }
 
-  Future<void> _editEntry(BirthdayEntry? entry) async {
-    if (entry == null) return;
-    final originalCategory = entry.category ?? 'General';
+  Future<void> _editEntry() async {
+    if (_selectedEntryId == null) return;
+    final entryToEdit = _entries.firstWhereOrNull((e) => e.id == _selectedEntryId);
+    if (entryToEdit == null) return;
 
     final returnedEntry = await Navigator.push<BirthdayEntry?>(
       context,
       DialogRoute(
-        builder: (context) => BirthdayEntryCreationForm(initialEntry: entry, categories: _categories),
+        builder: (context) => BirthdayEntryCreationForm(initialEntry: entryToEdit, categories: _categories),
         context: context,
       ),
     );
 
     if (returnedEntry == null) return;
+
+    setState(() {
+      final index = _entries.indexWhere((e) => e.id == returnedEntry.id);
+      if (index != -1) {
+        _entries[index] = returnedEntry;
+      }
+      _selectedEntryId = returnedEntry.id;
+    });
+
     _entryManager.save(returnedEntry);
 
     if(!mounted) return;
@@ -215,53 +198,25 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       returnedEntry,
       notificationTime: notificationTime,
     );
-
-    // Update In-Memory state
-    setState(() {
-      // Find and remove the old entry from all lists
-      _entries.removeWhere((e) => e.id == returnedEntry.id);
-      _currentGroupedEntries![originalCategory]?.removeWhere((e) => e.id == returnedEntry.id);
-
-      // If the old category group is now empty, remove it
-      if (_currentGroupedEntries![originalCategory]?.isEmpty ?? false) {
-        _currentGroupedEntries!.remove(originalCategory);
-      }
-
-      // Add the updated entry back
-      _entries.add(returnedEntry);
-      final newCategory = returnedEntry.category ?? 'General';
-      _currentGroupedEntries!.putIfAbsent(newCategory, () => []).add(returnedEntry);
-
-      // Re-sort the affected lists
-      _currentGroupedEntries![newCategory]!.sort((a, b) => _compareByDaysUntilBirthday(a, b, today));
-    });
   }
 
   void _deleteItem() async {
-    if (_selectedEntry == null) return;
-    final entryToDelete = _selectedEntry!;
-    final categoryName = entryToDelete.category ?? 'General';
+    if (_selectedEntryId == null) return;
+    final entryToDelete = _entries.firstWhereOrNull((e) => e.id == _selectedEntryId);
+    if(entryToDelete == null) return;
 
-    await _notificationService.cancelBirthdayNotification(_selectedEntry!.id);
-    await _entryManager.delete(entryToDelete.id);
-
-    // Update In-Memory state
     setState(() {
-      _entries.removeWhere((e) => e.id == entryToDelete.id);
-      _currentGroupedEntries![categoryName]?.removeWhere((e) => e.id == entryToDelete.id);
-
-      // If the old category group is now empty, remove it
-      if (_currentGroupedEntries![categoryName]?.isEmpty ?? false) {
-        _currentGroupedEntries!.remove(categoryName);
-      }
-
-      _selectedEntry = null; // Unselect the deleted item
+      _entries.removeWhere((e) => e.id == _selectedEntryId);
+      _selectedEntryId = null;
     });
+
+    await _notificationService.cancelBirthdayNotification(entryToDelete.id);
+    await _entryManager.delete(entryToDelete.id);
   }
 
   void _handleEntryTap(BirthdayEntry entry) {
     setState(() {
-      _selectedEntry = entry == _selectedEntry ? null : entry;
+      _selectedEntryId  = entry.id == _selectedEntryId ? null : entry.id;
     });
   }
 
@@ -273,24 +228,38 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<Map<String, List<BirthdayEntry>>>(
-      future: _groupedEntriesFuture,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
+    return StreamBuilder<List<BirthdayEntryCategory>>(
+      stream: _categoryManager.watchAll(),
+      builder: (context, categorySnapshot) {
+        if (categorySnapshot.connectionState == ConnectionState.waiting && _categories.isEmpty) {
           return const Center(child: CircularProgressIndicator());
         }
-
-        if (snapshot.hasError) {
-          return Center(child: Text("Error: ${snapshot.error}"));
+        if (categorySnapshot.hasError) {
+          return Center(child: Text("Error loading categories: ${categorySnapshot.error}"));
         }
 
-        if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          _currentGroupedEntries = null;
-          return _buildEmptyState();
-        }
+        _categories = categorySnapshot.data ?? _categories;
 
-        _currentGroupedEntries = snapshot.data!;
-        return _builtContent(_currentGroupedEntries!);
+        return StreamBuilder<List<BirthdayEntry>>(
+          stream: _entryManager.watchAll(),
+          builder: (context, entrySnapshot) {
+            if (entrySnapshot.connectionState == ConnectionState.waiting && _entries.isEmpty) {
+              return const Center(child: CircularProgressIndicator());
+            }
+            if (entrySnapshot.hasError) {
+              return Center(child: Text("Error loading entries: ${entrySnapshot.error}"));
+            }
+
+            _entries = entrySnapshot.data ?? _entries;
+
+            if (_entries.isEmpty) {
+              return _buildEmptyState();
+            }
+
+            final groupedEntries = _groupEntries(_entries, _categories);
+            return _builtContent(groupedEntries);
+          },
+        );
       },
     );
   }
@@ -299,7 +268,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     return SafeArea(
       child: Column(
         children: [
-          _builtActionBar(),
+          _builtActionBar(const []),
           const Expanded(child: Center(child: Text("No birthday entries found. Tap '+' to add one!"))),
         ],
       ),
@@ -317,10 +286,10 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     return SafeArea(
       child: Column(
         children: [
-          _builtActionBar(),
+          _builtActionBar(groupKeys),
           Expanded(
             child: RefreshIndicator(
-              onRefresh: _reloadDataAndResyncNotifications,
+              onRefresh: _handleRefresh,
               child: _isCategoryView ? _builtCategoryList(groupKeys, groupedEntries) : _buildFlatList(flatList),
             ),
           ),
@@ -379,7 +348,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                       return BirthdayEntryTile(
                         entry: entry,
                         onTap: _handleEntryTap,
-                        isSelected: entry == _selectedEntry,
+                        isSelected: entry.id == _selectedEntryId,
                       );
                     }).toList(),
                   ),
@@ -402,12 +371,12 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       padding: const EdgeInsets.all(8.0),
       itemBuilder: (context, index) {
         final entry = entries[index];
-        return BirthdayEntryTile(entry: entry, onTap: _handleEntryTap, isSelected: entry == _selectedEntry);
+        return BirthdayEntryTile(entry: entry, onTap: _handleEntryTap, isSelected: entry.id == _selectedEntryId);
       },
     );
   }
 
-  Widget _builtActionBar() {
+  Widget _builtActionBar(Iterable<String> categoryKeys) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: SizedBox(
@@ -429,21 +398,19 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
               const SizedBox(width: 8.0),
               _buildActionButton(
                 icon: Icons.edit,
-                onPressed: _selectedEntry != null ? () => _editEntry(_selectedEntry) : null,
+                onPressed: _selectedEntryId != null ? _editEntry : null,
               ),
               const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.delete, onPressed: _selectedEntry != null ? _deleteItem : null),
-              // const SizedBox(width: 8.0),
-              // _buildActionButton(icon: Icons.refresh, onPressed: _reloadDataAndResyncNotifications),
+              _buildActionButton(icon: Icons.delete, onPressed: _selectedEntryId != null ? _deleteItem : null),
               const SizedBox(width: 8.0),
               _buildActionButton(
                 icon: _isCategoryView ? Icons.view_list : Icons.grid_view,
                 onPressed: _toggleCategoryView,
               ),
               const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.unfold_more, onPressed: _isCategoryView ? _expandAll : null),
+              _buildActionButton(icon: Icons.unfold_more, onPressed: _isCategoryView ? () => _expandAll(categoryKeys) : null),
               const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.unfold_less, onPressed: _isCategoryView ? _collapseAll : null),
+              _buildActionButton(icon: Icons.unfold_less, onPressed: _isCategoryView ? () => _collapseAll(categoryKeys) : null),
               const SizedBox(width: 8.0),
               _buildActionButton(icon: Icons.settings, onPressed: _openSettings),
             ],

@@ -165,4 +165,13 @@ class SaveManager<T extends SyncableItem> {
       logger.i('SaveManager: Deleted $typeName with ID $id from LOCAL and REMOTE.');
     }
   }
+
+  Stream<List<T>> watchAll() {
+    if (saveMode == SaveMode.local) {
+      return localService.watchAll();
+    } else if (saveMode == SaveMode.remote) {
+      return remoteService!.watchAll();
+    }
+    return Stream.empty();
+  }
 }

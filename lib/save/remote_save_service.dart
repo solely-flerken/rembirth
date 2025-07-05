@@ -24,4 +24,10 @@ class RemoteSaveService<T> implements SaveService {
     // TODO: implement save
     throw UnimplementedError();
   }
+
+  @override
+  Stream<List> watchAll() {
+    // TODO: implement watchAll
+    throw UnimplementedError();
+  }
 }

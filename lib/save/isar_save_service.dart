@@ -37,18 +37,17 @@ class IsarSaveService<T> implements SaveService<T> {
     return isar.collection<int, T>().where().findAllAsync();
   }
 
-  Future<List<T>> query({
-    Filter? filter,
-    List<SortProperty>? sortBy,
-    List<DistinctProperty>? distinctBy,
-  }) async {
+  @override
+  Stream<List<T>> watchAll() {
     final isar = IsarDatabase.instance;
 
-    final query = isar.collection<int, T>().buildQuery<T>(
-      filter: filter,
-      sortBy: sortBy,
-      distinctBy: distinctBy,
-    );
+    return isar.collection<int, T>().where().watch(fireImmediately: true);
+  }
+
+  Future<List<T>> query({Filter? filter, List<SortProperty>? sortBy, List<DistinctProperty>? distinctBy}) async {
+    final isar = IsarDatabase.instance;
+
+    final query = isar.collection<int, T>().buildQuery<T>(filter: filter, sortBy: sortBy, distinctBy: distinctBy);
 
     return query.findAll();
   }

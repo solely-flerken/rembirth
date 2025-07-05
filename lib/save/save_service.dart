@@ -6,4 +6,6 @@ abstract class SaveService<T> {
   Future<void> delete(dynamic id);
 
   Future<List<T>> loadAll();
+
+  Stream<List<T>> watchAll();
 }

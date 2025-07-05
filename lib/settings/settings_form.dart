@@ -15,6 +15,15 @@ class SettingsPageWidget extends StatefulWidget {
 }
 
 class _SettingsPageWidgetState extends State<SettingsPageWidget> {
+  late final SaveManager<BirthdayEntryCategory> _categoryManager;
+  List<BirthdayEntryCategory> _categories = [];
+
+  @override
+  void initState() {
+    super.initState();
+    _categoryManager = context.read<SaveManager<BirthdayEntryCategory>>();
+  }
+
   void showStatus(String message) {
     if (message.isEmpty || !mounted) return;
 
@@ -32,7 +41,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
       );
   }
 
-  Future<void> _handleCategoryTap(SaveManager<BirthdayEntryCategory> categoryManager, BirthdayEntryCategory? category) async {
+  Future<void> _handleCategoryTap(BirthdayEntryCategory? category) async {
     final newCategory = await showDialog<BirthdayEntryCategory>(
       context: context,
       builder: (context) => BirthdayEntryCategoryCreationForm(initialCategory: category),
@@ -40,12 +49,25 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
     if (newCategory == null) return;
 
-    await categoryManager.save(newCategory);
+    setState(() {
+      final index = _categories.indexWhere((e) => e.id == newCategory.id);
+      if (index != -1) {
+        _categories[index] = newCategory;
+      } else {
+        _categories.add(newCategory);
+      }
+    });
+
+    await _categoryManager.save(newCategory);
     showStatus('Added category "${newCategory.name}"');
   }
 
-  Future<void> _handleCategoryDelete(SaveManager<BirthdayEntryCategory> categoryManager, BirthdayEntryCategory category) async {
-    await categoryManager.delete(category.id);
+  Future<void> _handleCategoryDelete(BirthdayEntryCategory category) async {
+    setState(() {
+      _categories.removeWhere((e) => e.id == category.id);
+    });
+
+    await _categoryManager.delete(category.id);
     showStatus('Deleted category: "${category.name}"');
   }
 
@@ -126,11 +148,11 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           ListTile(
             title: Text('Categories'),
             trailing: const Icon(Icons.add_circle_outline, size: 32),
-            onTap: () => _handleCategoryTap(categoryManager, null),
+            onTap: () => _handleCategoryTap(null),
           ),
 
-          FutureBuilder(
-            future: categoryManager.loadAll(),
+          StreamBuilder<List<BirthdayEntryCategory>>(
+            stream: categoryManager.watchAll(),
             builder: (context, snapshot) {
               if (!snapshot.hasData) {
                 return const Center(child: CircularProgressIndicator());
@@ -143,9 +165,9 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 );
               }
 
-              final categories = snapshot.data ?? [];
+              _categories = snapshot.data ?? _categories;
 
-              if (categories.isEmpty) {
+              if (_categories.isEmpty) {
                 return const ListTile(
                   title: Text('No categories yet.'),
                   subtitle: Text('Tap the "+" icon above to add a category.'),
@@ -156,7 +178,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 subtitle: Wrap(
                   spacing: 8.0,
                   runSpacing: 4.0,
-                  children: categories.map((category) {
+                  children: _categories.map((category) {
                     final categoryColor = category.color;
                     final textColor = ThemeData.estimateBrightnessForColor(categoryColor!) == Brightness.dark
                         ? Colors.white
@@ -166,14 +188,14 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
-                        onTap: () => _handleCategoryTap(categoryManager, category),
+                        onTap: () => _handleCategoryTap(category),
                         child: Chip(
                           label: Text(category.name!, style: TextStyle(color: textColor, fontSize: 16)),
                           backgroundColor: categoryColor,
                           shape: RoundedRectangleBorder(side: BorderSide.none, borderRadius: BorderRadius.circular(12)),
                           deleteIcon: const Icon(Icons.close, size: 20),
                           deleteIconColor: textColor,
-                          onDeleted: () => _handleCategoryDelete(categoryManager, category)
+                          onDeleted: () => _handleCategoryDelete(category)
                         ),
                       ),
                     );
