@@ -179,8 +179,8 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                   spacing: 8.0,
                   runSpacing: 4.0,
                   children: _categories.map((category) {
-                    final categoryColor = category.color;
-                    final textColor = ThemeData.estimateBrightnessForColor(categoryColor!) == Brightness.dark
+                    final categoryColor = category.color ?? Colors.grey.shade400;
+                    final textColor = ThemeData.estimateBrightnessForColor(categoryColor) == Brightness.dark
                         ? Colors.white
                         : Colors.black;
 
