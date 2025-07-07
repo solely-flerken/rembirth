@@ -117,24 +117,6 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     });
   }
 
-  Color _generateCategoryColor(String categoryName) {
-    final List<Color> availableColors = [
-      Colors.blue.shade300,
-      Colors.green.shade300,
-      Colors.purple.shade300,
-      Colors.orange.shade300,
-      Colors.red.shade300,
-      Colors.teal.shade300,
-      Colors.pink.shade300,
-      Colors.indigo.shade300,
-      Colors.amber.shade300,
-      Colors.cyan.shade300,
-    ];
-
-    int index = categoryName.hashCode.abs() % availableColors.length;
-    return availableColors[index];
-  }
-
   //#endregion
 
   //#region Entry managing
@@ -307,6 +289,9 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
         final groupEntries = groupedEntries[groupName]!;
         final isExpanded = _expandedStates[groupName] ?? false;
 
+        final category = _categories.firstWhereOrNull((c) => c.name == groupName);
+        final Color headerColor = category?.color ?? Colors.grey.shade400;
+
         return Card(
           margin: const EdgeInsets.only(bottom: 16.0),
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12.0)),
@@ -323,7 +308,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
                   decoration: BoxDecoration(
-                    color: _generateCategoryColor(groupName),
+                    color: headerColor,
                     borderRadius: BorderRadius.circular(12.0),
                   ),
                   child: Row(
