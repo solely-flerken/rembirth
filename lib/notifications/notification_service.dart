@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:rembirth/notifications/notification_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
@@ -26,7 +27,7 @@ class NotificationService {
   Future<void> init() async {
     await _initializeTimeZone();
 
-    const androidSettings = AndroidInitializationSettings('@mipmap/launcher_icon');
+    const androidSettings = AndroidInitializationSettings(kLauncherIcon);
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -168,7 +169,7 @@ class NotificationService {
         channelDescription: 'Channel for birthday notifications',
         importance: Importance.max,
         priority: Priority.high,
-        icon: '@mipmap/ic_launcher',
+        icon: kLauncherIcon,
       ),
       iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
     );
