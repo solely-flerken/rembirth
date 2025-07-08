@@ -54,10 +54,16 @@ class MonthPicker extends StatelessWidget {
                   side: BorderSide(color: borderColor, width: 3),
                 ),
                 elevation: isSelected || isCurrentMonth ? 5 : 2,
-                child: Center(
-                  child: Text(
-                    monthName,
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: textColor),
+                child: Padding(
+                  padding: const EdgeInsets.all(4.0),
+                  child: Center(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        monthName,
+                        style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: textColor),
+                      ),
+                    ),
                   ),
                 ),
               ),
