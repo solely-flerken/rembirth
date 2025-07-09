@@ -258,6 +258,8 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   }
 
   Widget _builtContent(Map<String, List<BirthdayEntry>> groupedEntries) {
+    final settingsController = context.watch<SettingsController>();
+
     final groupKeys = groupedEntries.keys.toList()..sort();
     final flatList = _getSortedFlatList();
 
@@ -265,17 +267,23 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       _expandedStates.putIfAbsent(key, () => false);
     }
 
+    final toolbar = _builtActionBar(groupKeys);
+    final listContent = Expanded(
+      child: RefreshIndicator(
+        onRefresh: _handleRefresh,
+        child: _isCategoryView
+            ? _builtCategoryList(groupKeys, groupedEntries)
+            : _buildFlatList(flatList),
+      ),
+    );
+
+    final contentWidgets = settingsController.settings.positionToolbarBottom
+        ? [listContent, toolbar]
+        : [toolbar, listContent];
+
     return SafeArea(
       child: Column(
-        children: [
-          _builtActionBar(groupKeys),
-          Expanded(
-            child: RefreshIndicator(
-              onRefresh: _handleRefresh,
-              child: _isCategoryView ? _builtCategoryList(groupKeys, groupedEntries) : _buildFlatList(flatList),
-            ),
-          ),
-        ],
+        children: contentWidgets,
       ),
     );
   }

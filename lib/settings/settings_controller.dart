@@ -30,6 +30,12 @@ class SettingsController extends ChangeNotifier {
     await _saveAndNotify();
   }
 
+  Future<void> setPositionToolbarBottom(bool pushToBottom) async {
+    if (_settings.positionToolbarBottom == pushToBottom) return;
+    _settings.positionToolbarBottom = pushToBottom;
+    await _saveAndNotify();
+  }
+
   Future<void> setNotificationsEnabled(bool enabled) async {
     if (_settings.notificationsEnabled == enabled) return;
     _settings.notificationsEnabled = enabled;

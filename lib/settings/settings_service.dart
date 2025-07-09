@@ -12,6 +12,7 @@ class SettingsService {
 
     return Settings(
       theme: ThemeSetting.values.firstWhere((e) => e.name == themeName, orElse: () => defaultSettings.theme),
+      positionToolbarBottom: prefs.getBool(kPositionToolbarBottom) ?? defaultSettings.positionToolbarBottom,
       notificationsEnabled: prefs.getBool(kNotificationsEnabledKey) ?? defaultSettings.notificationsEnabled,
       notificationTimeHour: prefs.getInt(kNotificationHourKey) ?? defaultSettings.notificationTime.hour,
       notificationTimeMinute: prefs.getInt(kNotificationMinuteKey) ?? defaultSettings.notificationTime.minute,
@@ -22,6 +23,7 @@ class SettingsService {
     final prefs = await SharedPreferences.getInstance();
 
     await prefs.setString(kTheme, settings.theme.name);
+    await prefs.setBool(kPositionToolbarBottom, settings.positionToolbarBottom);
     await prefs.setBool(kNotificationsEnabledKey, settings.notificationsEnabled);
     await prefs.setInt(kNotificationHourKey, settings.notificationTimeHour);
     await prefs.setInt(kNotificationMinuteKey, settings.notificationTimeMinute);

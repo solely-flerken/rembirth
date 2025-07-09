@@ -110,6 +110,32 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
             ),
           ),
 
+          // --- Layout ---
+          const Divider(),
+          ListTile(
+            title: const Text('Toolbar Position'),
+            subtitle: SegmentedButton<bool>(
+              segments: const <ButtonSegment<bool>>[
+                ButtonSegment<bool>(
+                  value: false,
+                  label: Text('Top'),
+                  icon: Icon(Icons.vertical_align_top),
+                ),
+                ButtonSegment<bool>(
+                  value: true,
+                  label: Text('Bottom'),
+                  icon: Icon(Icons.vertical_align_bottom),
+                ),
+              ],
+              selected: <bool>{settingsController.settings.positionToolbarBottom},
+              onSelectionChanged: (Set<bool> newSelection) {
+                final pushToBottom = newSelection.first;
+                context.read<SettingsController>().setPositionToolbarBottom(pushToBottom);
+                showStatus('Toolbar moved to ${pushToBottom ? "bottom" : "top"}');
+              },
+            ),
+          ),
+
           // --- Notifications Toggle ---
           const Divider(),
           SwitchListTile(

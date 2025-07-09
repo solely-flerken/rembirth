@@ -3,12 +3,14 @@ import 'package:rembirth/settings/themes.dart';
 
 class Settings {
   ThemeSetting theme;
+  bool positionToolbarBottom;
   bool notificationsEnabled;
   int notificationTimeHour;
   int notificationTimeMinute;
 
   Settings({
     required this.theme,
+    required this.positionToolbarBottom,
     required this.notificationsEnabled,
     required this.notificationTimeHour,
     required this.notificationTimeMinute,
@@ -17,6 +19,7 @@ class Settings {
   factory Settings.defaults() {
     return Settings(
       theme: ThemeSetting.system,
+      positionToolbarBottom: false,
       notificationsEnabled: true,
       notificationTimeHour: 9,
       notificationTimeMinute: 0,
