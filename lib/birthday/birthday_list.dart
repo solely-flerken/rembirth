@@ -208,6 +208,28 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   //#endregion
 
+  //#region Category managing
+
+  Future<void> _handleCategoryEdit(BirthdayEntryCategory? category) async {
+    final editedCategory = await showDialog<BirthdayEntryCategory>(
+      context: context,
+      builder: (context) => BirthdayEntryCategoryCreationForm(initialCategory: category),
+    );
+
+    if (editedCategory == null) return;
+
+    setState(() {
+      final index = _categories.indexWhere((e) => e.id == editedCategory.id);
+      if (index != -1) {
+        _categories[index] = editedCategory;
+      }
+    });
+
+    await _categoryManager.save(editedCategory);
+  }
+
+  //#endregion
+
   void _openSettings() {
     Navigator.push(context, MaterialPageRoute(builder: (context) => SettingsPageWidget()));
   }
@@ -318,6 +340,11 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
               // Category header
               InkWell(
                 onTap: () => _toggleExpansion(category.id),
+                onLongPress: () {
+                  if(category.id != -1){
+                    _handleCategoryEdit(category);
+                  }
+                },
                 borderRadius: BorderRadius.circular(12.0),
                 child: Container(
                   width: double.infinity,
