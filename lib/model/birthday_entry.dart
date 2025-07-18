@@ -14,7 +14,8 @@ class BirthdayEntry extends SyncableItem {
   int? day;
 
   // Since Isar v4 doesn't support links yet, we need to use a workaround.
-  String? category;
+  @Index()
+  int? categoryId;
 
   @override
   String toString() {

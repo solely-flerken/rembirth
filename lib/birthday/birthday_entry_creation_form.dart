@@ -43,7 +43,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
       _name = widget.initialEntry!.name!;
       nameController.text = _name!;
 
-      _category = _categories.firstWhereOrNull((c) => c.name == widget.initialEntry!.category);
+      _category = _categories.firstWhereOrNull((c) => c.id == widget.initialEntry!.categoryId);
 
       _selectedDate = PartialDate(
         year: widget.initialEntry!.year,
@@ -79,7 +79,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
     final newEntry = BirthdayEntry()
       ..id = id
       ..name = _name
-      ..category = _category?.name
+      ..categoryId = _category?.id
       ..year = _selectedDate?.year
       ..month = _selectedDate?.month
       ..day = _selectedDate?.day;

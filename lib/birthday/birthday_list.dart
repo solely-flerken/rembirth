@@ -10,6 +10,7 @@ import 'package:rembirth/settings/settings_form.dart';
 import '../settings/settings_controller.dart';
 import '../util/date_util.dart';
 import 'birthday_entry.dart';
+import 'birthday_entry_category_creation_form.dart';
 import 'birthday_entry_creation_form.dart';
 
 class BirthdayListWidget extends StatefulWidget {
@@ -31,10 +32,16 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   int? _selectedEntryId;
 
   // UI
-  final Map<String, bool> _expandedStates = {};
+  final Map<int, bool> _expandedStates = {};
   bool _isCategoryView = true;
 
   final today = DateTime.now();
+
+  /// A virtual category used for entries that don't have a category assigned
+  static final _generalCategory = BirthdayEntryCategory()
+    ..id = -1
+    ..name = 'General'
+    ..colorValue = Colors.grey.shade400.toARGB32();
 
   @override
   void initState() {
@@ -47,18 +54,15 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   //#region Data
 
   /// Groups a list of birthday entries by category.
-  Map<String, List<BirthdayEntry>> _groupEntries(
+  Map<BirthdayEntryCategory, List<BirthdayEntry>> _groupEntries(
       List<BirthdayEntry> entries, List<BirthdayEntryCategory> categories) {
-    final Map<String, List<BirthdayEntry>> grouped = {};
+    final Map<BirthdayEntryCategory, List<BirthdayEntry>> grouped = {};
 
-    for (var entry in entries) {
-      var entryCategory = entry.category;
+    final categoryMap = {for (var cat in categories) cat.id: cat};
 
-      if (entryCategory == null || !categories.any((x) => x.name == entryCategory)) {
-        entryCategory = 'General';
-      }
-
-      grouped.putIfAbsent(entryCategory, () => []).add(entry);
+    for (final entry in entries) {
+      final category = categoryMap[entry.categoryId] ?? _generalCategory;
+      grouped.putIfAbsent(category, () => []).add(entry);
     }
 
     for (final category in grouped.keys) {
@@ -93,21 +97,21 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   //#region UI
 
-  void _toggleExpansion(String categoryName) {
+  void _toggleExpansion(int categoryId) {
     setState(() {
-      _expandedStates[categoryName] = !(_expandedStates[categoryName] ?? false);
+      _expandedStates[categoryId] = !(_expandedStates[categoryId] ?? false);
     });
   }
 
-  void _expandAll(Iterable<String> categoryKeys) {
+  void _expandAll(Iterable<int> categoryIds) {
     setState(() {
-      _expandedStates.addEntries(categoryKeys.map((key) => MapEntry(key, true)));
+      _expandedStates.addEntries(categoryIds.map((key) => MapEntry(key, true)));
     });
   }
 
-  void _collapseAll(Iterable<String> categoryKeys) {
+  void _collapseAll(Iterable<int> categoryIds) {
     setState(() {
-      _expandedStates.addEntries(categoryKeys.map((key) => MapEntry(key, false)));
+      _expandedStates.addEntries(categoryIds.map((key) => MapEntry(key, false)));
     });
   }
 
@@ -257,22 +261,25 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     );
   }
 
-  Widget _builtContent(Map<String, List<BirthdayEntry>> groupedEntries) {
+  Widget _builtContent(Map<BirthdayEntryCategory, List<BirthdayEntry>> groupedEntries) {
     final settingsController = context.watch<SettingsController>();
 
-    final groupKeys = groupedEntries.keys.toList()..sort();
+    final categoryKeys = groupedEntries.keys.toList()
+      ..sort((a, b) => a.name!.compareTo(b.name!));
     final flatList = _getSortedFlatList();
 
-    for (var key in groupKeys) {
-      _expandedStates.putIfAbsent(key, () => false);
+    for (var key in categoryKeys) {
+      _expandedStates.putIfAbsent(key.id, () => false);
     }
 
-    final toolbar = _builtActionBar(groupKeys);
+    final categoryIds = categoryKeys.map((c) => c.id);
+    final toolbar = _builtActionBar(categoryIds);
+
     final listContent = Expanded(
       child: RefreshIndicator(
         onRefresh: _handleRefresh,
         child: _isCategoryView
-            ? _builtCategoryList(groupKeys, groupedEntries)
+            ? _builtCategoryList(categoryKeys, groupedEntries)
             : _buildFlatList(flatList),
       ),
     );
@@ -288,17 +295,17 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     );
   }
 
-  Widget _builtCategoryList(List<String> categoryKeys, Map<String, List<BirthdayEntry>> groupedEntries) {
+  Widget _builtCategoryList(List<BirthdayEntryCategory> categories, Map<BirthdayEntryCategory, List<BirthdayEntry>> groupedEntries) {
     return ListView.builder(
-      itemCount: categoryKeys.length,
+      itemCount: categories.length,
       padding: const EdgeInsets.all(16.0),
       itemBuilder: (context, groupIndex) {
-        final groupName = categoryKeys[groupIndex];
-        final groupEntries = groupedEntries[groupName]!;
-        final isExpanded = _expandedStates[groupName] ?? false;
+        final category = categories[groupIndex];
+        final groupEntries = groupedEntries[category]!;
+        final isExpanded = _expandedStates[category.id] ?? false;
 
-        final category = _categories.firstWhereOrNull((c) => c.name == groupName);
-        final Color headerColor = category?.color ?? Colors.grey.shade400;
+        final Color headerColor = category.color ?? Colors.grey.shade400;
+        final String categoryName = category.name!;
 
         return Card(
           margin: const EdgeInsets.only(bottom: 16.0),
@@ -310,7 +317,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
             children: [
               // Category header
               InkWell(
-                onTap: () => _toggleExpansion(groupName),
+                onTap: () => _toggleExpansion(category.id),
                 borderRadius: BorderRadius.circular(12.0),
                 child: Container(
                   width: double.infinity,
@@ -323,7 +330,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        groupName,
+                        categoryName,
                         style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white),
                       ),
                       Icon(isExpanded ? Icons.keyboard_arrow_up : Icons.keyboard_arrow_down, color: Colors.white),
@@ -369,7 +376,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     );
   }
 
-  Widget _builtActionBar(Iterable<String> categoryKeys) {
+  Widget _builtActionBar(Iterable<int> categoryIds) {
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: SizedBox(
@@ -401,9 +408,9 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                 onPressed: _toggleCategoryView,
               ),
               const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.unfold_more, onPressed: _isCategoryView ? () => _expandAll(categoryKeys) : null),
+              _buildActionButton(icon: Icons.unfold_more, onPressed: _isCategoryView ? () => _expandAll(categoryIds) : null),
               const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.unfold_less, onPressed: _isCategoryView ? () => _collapseAll(categoryKeys) : null),
+              _buildActionButton(icon: Icons.unfold_less, onPressed: _isCategoryView ? () => _collapseAll(categoryIds) : null),
               const SizedBox(width: 8.0),
               _buildActionButton(icon: Icons.settings, onPressed: _openSettings),
             ],
