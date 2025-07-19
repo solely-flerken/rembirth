@@ -55,7 +55,9 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   /// Groups a list of birthday entries by category.
   Map<BirthdayEntryCategory, List<BirthdayEntry>> _groupEntries(
-      List<BirthdayEntry> entries, List<BirthdayEntryCategory> categories) {
+    List<BirthdayEntry> entries,
+    List<BirthdayEntryCategory> categories,
+  ) {
     final Map<BirthdayEntryCategory, List<BirthdayEntry>> grouped = {};
 
     final categoryMap = {for (var cat in categories) cat.id: cat};
@@ -143,13 +145,10 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     _entryManager.save(returnedEntry);
 
-    if(!mounted) return;
+    if (!mounted) return;
 
     final notificationTime = context.read<SettingsController>().settings.notificationTime;
-    await _notificationService.scheduleBirthdayNotification(
-      returnedEntry,
-      notificationTime: notificationTime,
-    );
+    await _notificationService.scheduleBirthdayNotification(returnedEntry, notificationTime: notificationTime);
   }
 
   Future<void> _editEntry() async {
@@ -177,19 +176,16 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     _entryManager.save(returnedEntry);
 
-    if(!mounted) return;
+    if (!mounted) return;
 
     final notificationTime = context.read<SettingsController>().settings.notificationTime;
-    await _notificationService.scheduleBirthdayNotification(
-      returnedEntry,
-      notificationTime: notificationTime,
-    );
+    await _notificationService.scheduleBirthdayNotification(returnedEntry, notificationTime: notificationTime);
   }
 
   void _deleteItem() async {
     if (_selectedEntryId == null) return;
     final entryToDelete = _entries.firstWhereOrNull((e) => e.id == _selectedEntryId);
-    if(entryToDelete == null) return;
+    if (entryToDelete == null) return;
 
     setState(() {
       _entries.removeWhere((e) => e.id == _selectedEntryId);
@@ -202,7 +198,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   void _handleEntryTap(BirthdayEntry entry) {
     setState(() {
-      _selectedEntryId  = entry.id == _selectedEntryId ? null : entry.id;
+      _selectedEntryId = entry.id == _selectedEntryId ? null : entry.id;
     });
   }
 
@@ -286,8 +282,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   Widget _builtContent(Map<BirthdayEntryCategory, List<BirthdayEntry>> groupedEntries) {
     final settingsController = context.watch<SettingsController>();
 
-    final categoryKeys = groupedEntries.keys.toList()
-      ..sort((a, b) => a.name!.compareTo(b.name!));
+    final categoryKeys = groupedEntries.keys.toList()..sort((a, b) => a.name!.compareTo(b.name!));
     final flatList = _getSortedFlatList();
 
     for (var key in categoryKeys) {
@@ -300,9 +295,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     final listContent = Expanded(
       child: RefreshIndicator(
         onRefresh: _handleRefresh,
-        child: _isCategoryView
-            ? _builtCategoryList(categoryKeys, groupedEntries)
-            : _buildFlatList(flatList),
+        child: _isCategoryView ? _builtCategoryList(categoryKeys, groupedEntries) : _buildFlatList(flatList),
       ),
     );
 
@@ -310,14 +303,13 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
         ? [listContent, toolbar]
         : [toolbar, listContent];
 
-    return SafeArea(
-      child: Column(
-        children: contentWidgets,
-      ),
-    );
+    return SafeArea(child: Column(children: contentWidgets));
   }
 
-  Widget _builtCategoryList(List<BirthdayEntryCategory> categories, Map<BirthdayEntryCategory, List<BirthdayEntry>> groupedEntries) {
+  Widget _builtCategoryList(
+    List<BirthdayEntryCategory> categories,
+    Map<BirthdayEntryCategory, List<BirthdayEntry>> groupedEntries,
+  ) {
     return ListView.builder(
       itemCount: categories.length,
       padding: const EdgeInsets.all(16.0),
@@ -341,7 +333,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
               InkWell(
                 onTap: () => _toggleExpansion(category.id),
                 onLongPress: () {
-                  if(category.id != -1){
+                  if (category.id != -1) {
                     _handleCategoryEdit(category);
                   }
                 },
@@ -349,10 +341,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                 child: Container(
                   width: double.infinity,
                   padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
-                  decoration: BoxDecoration(
-                    color: headerColor,
-                    borderRadius: BorderRadius.circular(12.0),
-                  ),
+                  decoration: BoxDecoration(color: headerColor, borderRadius: BorderRadius.circular(12.0)),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -404,44 +393,96 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   }
 
   Widget _builtActionBar(Iterable<int> categoryIds) {
+    final bool isEntrySelected = _selectedEntryId != null;
+    final bool canExpandCollapse = _isCategoryView && categoryIds.isNotEmpty;
+
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
       child: SizedBox(
         height: 56.0 + 16.0,
-        child: SingleChildScrollView(
-          scrollDirection: Axis.horizontal,
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.end,
-            children: [
-              // TODO: Remove this button. Only for testing
-              // _buildActionButton(
-              //   icon: Icons.notifications_active,
-              //   onPressed: () => _selectedEntry != null
-              //       ? NotificationService().scheduleBirthdayNotification(_selectedEntry!, testMode: true)
-              //       : null,
-              // ),
-              // const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.add, onPressed: _addEntry),
-              const SizedBox(width: 8.0),
-              _buildActionButton(
-                icon: Icons.edit,
-                onPressed: _selectedEntryId != null ? _editEntry : null,
+        child: Row(
+          mainAxisAlignment: MainAxisAlignment.end,
+          children: [
+            // TODO: Remove this button. Only for testing
+            // _buildActionButton(
+            //   icon: Icons.notifications_active,
+            //   onPressed: () => isEntrySelected
+            //       ? NotificationService().scheduleBirthdayNotification(_entries[_selectedEntryId!], testMode: true)
+            //       : null,
+            // ),
+            const SizedBox(width: 8.0),
+            _buildActionButton(icon: Icons.add, onPressed: _addEntry),
+            const SizedBox(width: 8.0),
+            _buildActionButton(icon: Icons.edit, onPressed: isEntrySelected ? _editEntry : null),
+            const SizedBox(width: 8.0),
+            _buildActionButton(icon: Icons.delete, onPressed: isEntrySelected ? _deleteItem : null),
+
+            Spacer(),
+
+            Card(
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+              child: SizedBox(
+                width: 56.0,
+                height: 56.0,
+                child: PopupMenuButton<VoidCallback>(
+                  icon: Icon(Icons.more_horiz, size: 28.0, color: Theme.of(context).colorScheme.primary),
+                  position: PopupMenuPosition.under,
+                  offset: const Offset(0, 12.0),
+                  onSelected: (callback) => callback(),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
+                  itemBuilder: (context) => [
+                    PopupMenuItem(
+                      value: _toggleCategoryView,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ListTile(
+                          leading: Icon(
+                            _isCategoryView ? Icons.view_list : Icons.grid_view,
+                            size: 24,
+                            color: Theme.of(context).colorScheme.primary,
+                          ),
+                          title: Text(_isCategoryView ? 'Show as List' : 'Show as Categories'),
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: () => _expandAll(categoryIds),
+                      enabled: canExpandCollapse,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ListTile(
+                          leading: Icon(Icons.unfold_more, size: 24, color: Theme.of(context).colorScheme.primary),
+                          title: Text('Expand All'),
+                        ),
+                      ),
+                    ),
+                    PopupMenuItem(
+                      value: () => _collapseAll(categoryIds),
+                      enabled: canExpandCollapse,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ListTile(
+                          leading: Icon(Icons.unfold_less, size: 24, color: Theme.of(context).colorScheme.primary),
+                          title: Text('Collapse All'),
+                        ),
+                      ),
+                    ),
+                    const PopupMenuDivider(indent: 8, endIndent: 8, thickness: 2),
+                    PopupMenuItem(
+                      value: _openSettings,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                        child: ListTile(
+                          leading: Icon(Icons.settings, size: 24, color: Theme.of(context).colorScheme.primary),
+                          title: Text('Settings'),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
               ),
-              const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.delete, onPressed: _selectedEntryId != null ? _deleteItem : null),
-              const SizedBox(width: 8.0),
-              _buildActionButton(
-                icon: _isCategoryView ? Icons.view_list : Icons.grid_view,
-                onPressed: _toggleCategoryView,
-              ),
-              const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.unfold_more, onPressed: _isCategoryView ? () => _expandAll(categoryIds) : null),
-              const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.unfold_less, onPressed: _isCategoryView ? () => _collapseAll(categoryIds) : null),
-              const SizedBox(width: 8.0),
-              _buildActionButton(icon: Icons.settings, onPressed: _openSettings),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
