@@ -393,6 +393,8 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   }
 
   Widget _builtActionBar(Iterable<int> categoryIds) {
+    final settingsController = context.watch<SettingsController>();
+    final isToolbarBottom = settingsController.settings.positionToolbarBottom;
     final bool isEntrySelected = _selectedEntryId != null;
     final bool canExpandCollapse = _isCategoryView && categoryIds.isNotEmpty;
 
@@ -426,8 +428,9 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                 height: 56.0,
                 child: PopupMenuButton<VoidCallback>(
                   icon: Icon(Icons.more_horiz, size: 28.0, color: Theme.of(context).colorScheme.primary),
-                  position: PopupMenuPosition.under,
-                  offset: const Offset(0, 12.0),
+                  // TODO: Wrong animation direction and weird value for positioning
+                  position: isToolbarBottom ? PopupMenuPosition.over : PopupMenuPosition.under,
+                  offset: isToolbarBottom ? Offset(0, -260) : const Offset(0, 12.0),
                   onSelected: (callback) => callback(),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
                   itemBuilder: (context) => [
