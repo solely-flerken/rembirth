@@ -1,7 +1,7 @@
 name: rembirth
-description: "A new Flutter project."
+description: "A minimalistic app to help you remember your friends' birthdays."
 publish_to: 'none'
-version: 0.1.0
+version: 1.0.0+1
 
 environment:
   sdk: ^3.8.0
