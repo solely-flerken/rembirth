@@ -14,6 +14,8 @@ dependencies:
   flutter_colorpicker: ^1.1.0
   flutter_launcher_icons: ^0.14.4
   flutter_local_notifications: ^19.2.1
+  flutter_localizations:
+    sdk: flutter
   flutter_timezone: ^4.1.1
   intl: ^0.20.2
   isar:
@@ -36,4 +38,5 @@ dev_dependencies:
   analyzer: ^6.11.0
 
 flutter:
+  generate: true
   uses-material-design: true
