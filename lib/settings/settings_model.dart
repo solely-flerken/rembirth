@@ -7,6 +7,7 @@ class Settings {
   bool notificationsEnabled;
   int notificationTimeHour;
   int notificationTimeMinute;
+  String? languageCode;
 
   Settings({
     required this.theme,
@@ -14,6 +15,7 @@ class Settings {
     required this.notificationsEnabled,
     required this.notificationTimeHour,
     required this.notificationTimeMinute,
+    required this.languageCode,
   });
 
   factory Settings.defaults() {
@@ -23,11 +25,15 @@ class Settings {
       notificationsEnabled: true,
       notificationTimeHour: 9,
       notificationTimeMinute: 0,
+      languageCode: null,
     );
   }
 
   /// Returns the stored time as a TimeOfDay object
   TimeOfDay get notificationTime => TimeOfDay(hour: notificationTimeHour, minute: notificationTimeMinute);
+
+  /// Returns a Locale object based on the saved language code
+  Locale? get locale => languageCode != null ? Locale(languageCode!) : null;
 
   ThemeMode get themeMode {
     switch (theme) {

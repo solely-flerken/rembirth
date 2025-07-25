@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rembirth/l10n/app_localizations.dart';
 import 'package:rembirth/model/birthday_entry.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/save/isar_database.dart';
@@ -73,6 +74,9 @@ class MainApp extends StatelessWidget {
     final settingsController = context.watch<SettingsController>();
 
     return MaterialApp(
+      locale: settingsController.settings.locale,
+      localizationsDelegates: AppLocalizations.localizationsDelegates,
+      supportedLocales: AppLocalizations.supportedLocales,
       themeMode: settingsController.settings.themeMode,
       darkTheme: ThemeData.dark(),
       theme: ThemeData.light(),

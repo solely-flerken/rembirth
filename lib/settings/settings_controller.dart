@@ -30,6 +30,12 @@ class SettingsController extends ChangeNotifier {
     await _saveAndNotify();
   }
 
+  Future<void> setLanguage(String? newLanguageCode) async {
+    if (_settings.languageCode == newLanguageCode) return;
+    _settings.languageCode = newLanguageCode;
+    await _saveAndNotify();
+  }
+
   Future<void> setPositionToolbarBottom(bool pushToBottom) async {
     if (_settings.positionToolbarBottom == pushToBottom) return;
     _settings.positionToolbarBottom = pushToBottom;
@@ -74,6 +80,8 @@ class SettingsController extends ChangeNotifier {
     final shouldRescheduleNotifications = _settings.notificationTime != defaultSettings.notificationTime;
 
     _settings.theme = defaultSettings.theme;
+    _settings.positionToolbarBottom = defaultSettings.positionToolbarBottom;
+    _settings.languageCode = defaultSettings.languageCode;
     _settings.notificationsEnabled = defaultSettings.notificationsEnabled;
     _settings.notificationTimeHour = defaultSettings.notificationTimeHour;
     _settings.notificationTimeMinute = defaultSettings.notificationTimeMinute;

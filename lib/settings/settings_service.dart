@@ -16,6 +16,7 @@ class SettingsService {
       notificationsEnabled: prefs.getBool(kNotificationsEnabledKey) ?? defaultSettings.notificationsEnabled,
       notificationTimeHour: prefs.getInt(kNotificationHourKey) ?? defaultSettings.notificationTime.hour,
       notificationTimeMinute: prefs.getInt(kNotificationMinuteKey) ?? defaultSettings.notificationTime.minute,
+      languageCode: prefs.getString(kLanguageCode) ?? defaultSettings.languageCode,
     );
   }
 
@@ -27,6 +28,10 @@ class SettingsService {
     await prefs.setBool(kNotificationsEnabledKey, settings.notificationsEnabled);
     await prefs.setInt(kNotificationHourKey, settings.notificationTimeHour);
     await prefs.setInt(kNotificationMinuteKey, settings.notificationTimeMinute);
+
+    if(settings.languageCode != null){
+      await prefs.setString(kLanguageCode, settings.languageCode!);
+    }
   }
 
   static Future<void> clearSettings() async {
