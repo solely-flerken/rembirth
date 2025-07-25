@@ -4,8 +4,10 @@ import 'package:rembirth/settings/settings_controller.dart';
 import 'package:rembirth/settings/themes.dart';
 
 import '../birthday/birthday_entry_category_creation_form.dart';
+import '../l10n/app_localizations.dart';
 import '../model/birthday_entry_category.dart';
 import '../save/save_manager.dart';
+import '../util/language_local.dart';
 
 class SettingsPageWidget extends StatefulWidget {
   const SettingsPageWidget({super.key});
@@ -59,7 +61,6 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     });
 
     await _categoryManager.save(newCategory);
-    showStatus('Added category "${newCategory.name}"');
   }
 
   Future<void> _handleCategoryDelete(BirthdayEntryCategory category) async {
@@ -68,44 +69,112 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     });
 
     await _categoryManager.delete(category.id);
-    showStatus('Deleted category: "${category.name}"');
+  }
+
+  void _showLanguageSelectionDialog(BuildContext context) {
+    final settingsController = context.read<SettingsController>();
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    void handleLanguageSelected(String? newLanguageCode) {
+      settingsController.setLanguage(newLanguageCode);
+      Navigator.pop(context);
+
+      final locale = newLanguageCode != null
+          ? Locale(newLanguageCode)
+          : WidgetsBinding.instance.platformDispatcher.locale;
+
+      AppLocalizations.delegate.load(locale).then((newL10n) {
+        final message = newL10n.settingsLanguageSetTo(newLanguageCode ?? newL10n.settingsSystemDefault);
+        showStatus(message);
+      });
+    }
+
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        final currentLanguageCode = settingsController.settings.languageCode;
+
+        return SimpleDialog(
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+          title: Text(l10n.settingsLanguage, style: TextStyle(color: theme.colorScheme.primary)),
+          children: [
+            // System Default option
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+              child: SimpleDialogOption(
+                onPressed: () => handleLanguageSelected(null),
+                child: Row(
+                  children: [
+                    Expanded(child: Text(l10n.settingsSystemDefault, style: TextStyle(fontSize: 16))),
+                    if (currentLanguageCode == null) const Icon(Icons.check, color: Colors.green),
+                  ],
+                ),
+              ),
+            ),
+            const Divider(indent: 16, endIndent: 16),
+            // Language options
+            ...AppLocalizations.supportedLocales.map((locale) {
+              final languageCode = locale.languageCode;
+              final isSelected = languageCode == currentLanguageCode;
+
+              return SimpleDialogOption(
+                onPressed: () => handleLanguageSelected(languageCode),
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: Text(LanguageLocal.getLanguageNativeName(languageCode), style: TextStyle(fontSize: 16)),
+                      ),
+                      if (isSelected) const Icon(Icons.check, color: Colors.green),
+                    ],
+                  ),
+                ),
+              );
+            }),
+          ],
+        );
+      },
+    );
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final settingsController = context.watch<SettingsController>();
     final categoryManager = context.read<SaveManager<BirthdayEntryCategory>>();
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Settings')),
+      appBar: AppBar(title: Text(l10n.settings)),
       body: ListView(
         padding: const EdgeInsets.all(16.0),
         children: [
           // --- Themes ---
           ListTile(
-            title: const Text('Theme'),
+            title: Text(l10n.theme),
             subtitle: SegmentedButton<ThemeSetting>(
-              segments: const <ButtonSegment<ThemeSetting>>[
+              segments: <ButtonSegment<ThemeSetting>>[
                 ButtonSegment<ThemeSetting>(
                   value: ThemeSetting.light,
-                  label: Text('Light'),
-                  icon: Icon(Icons.wb_sunny_outlined),
+                  label: Text(l10n.themeLight),
+                  icon: const Icon(Icons.wb_sunny_outlined),
                 ),
                 ButtonSegment<ThemeSetting>(
                   value: ThemeSetting.dark,
-                  label: Text('Dark'),
-                  icon: Icon(Icons.nightlight_round),
+                  label: Text(l10n.themeDark),
+                  icon: const Icon(Icons.nightlight_round),
                 ),
                 ButtonSegment<ThemeSetting>(
                   value: ThemeSetting.system,
-                  label: Text('System'),
-                  icon: Icon(Icons.brightness_auto_outlined),
+                  label: Text(l10n.themeSystem),
+                  icon: const Icon(Icons.brightness_auto_outlined),
                 ),
               ],
               selected: <ThemeSetting>{settingsController.settings.theme},
               onSelectionChanged: (Set<ThemeSetting> newSelection) {
                 context.read<SettingsController>().setTheme(newSelection.first);
-                showStatus('Switched to ${newSelection.first.name} theme');
+                showStatus(l10n.switchedTheme(newSelection.first.name));
               },
             ),
           ),
@@ -113,43 +182,58 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           // --- Layout ---
           const Divider(),
           ListTile(
-            title: const Text('Toolbar Position'),
+            title: Text(l10n.toolbarLayout),
             subtitle: SegmentedButton<bool>(
-              segments: const <ButtonSegment<bool>>[
+              segments: <ButtonSegment<bool>>[
                 ButtonSegment<bool>(
                   value: false,
-                  label: Text('Top'),
-                  icon: Icon(Icons.vertical_align_top),
+                  label: Text(l10n.toolbarPositionTop),
+                  icon: const Icon(Icons.vertical_align_top),
                 ),
                 ButtonSegment<bool>(
                   value: true,
-                  label: Text('Bottom'),
-                  icon: Icon(Icons.vertical_align_bottom),
+                  label: Text(l10n.toolbarPositionBottom),
+                  icon: const Icon(Icons.vertical_align_bottom),
                 ),
               ],
               selected: <bool>{settingsController.settings.positionToolbarBottom},
               onSelectionChanged: (Set<bool> newSelection) {
                 final pushToBottom = newSelection.first;
                 context.read<SettingsController>().setPositionToolbarBottom(pushToBottom);
-                showStatus('Toolbar moved to ${pushToBottom ? "bottom" : "top"}');
+                final position = pushToBottom ? 'bottom' : 'top';
+                showStatus(l10n.toolbarMoved(position));
               },
             ),
+          ),
+
+          // --- Languages ---
+          const Divider(),
+          ListTile(
+            title: Text(l10n.settingsLanguage),
+            subtitle: Text(
+              LanguageLocal.getLanguageNativeName(settingsController.settings.languageCode ?? l10n.localeName),
+            ),
+            trailing: const Icon(Icons.language, size: 32),
+            onTap: () {
+              _showLanguageSelectionDialog(context);
+            },
           ),
 
           // --- Notifications Toggle ---
           const Divider(),
           SwitchListTile(
-            title: const Text('Enable Notifications'),
+            title: Text(l10n.enableNotifications),
             value: settingsController.settings.notificationsEnabled,
             onChanged: (isEnabled) async {
               await context.read<SettingsController>().setNotificationsEnabled(isEnabled);
-              showStatus('Notifications ${isEnabled ? "enabled" : "disabled"}');
+              final message = isEnabled ? l10n.notificationsEnabled : l10n.notificationsDisabled;
+              showStatus(message);
             },
           ),
 
           // --- Notification Time Picker ---
           ListTile(
-            title: const Text('Notification Time'),
+            title: Text(l10n.notificationTime),
             subtitle: Text(settingsController.settings.notificationTime.format(context)),
             trailing: const Icon(Icons.schedule, size: 32),
             enabled: settingsController.settings.notificationsEnabled,
@@ -164,7 +248,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               if (pickedTime != null) {
                 await context.read<SettingsController>().updateNotificationTime(pickedTime);
                 if (!context.mounted) return;
-                showStatus('Notification time set to ${pickedTime.format(context)}');
+                showStatus(l10n.notificationTimeSet(pickedTime.format(context)));
               }
             },
           ),
@@ -172,9 +256,12 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           // --- Categories ---
           const Divider(),
           ListTile(
-            title: Text('Categories'),
+            title: Text(l10n.categories),
             trailing: const Icon(Icons.add_circle_outline, size: 32),
-            onTap: () => _handleCategoryTap(null),
+            onTap: () {
+              _handleCategoryTap(null);
+              showStatus(l10n.addedCategory);
+            },
           ),
 
           StreamBuilder<List<BirthdayEntryCategory>>(
@@ -185,19 +272,13 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               }
 
               if (snapshot.hasError) {
-                return ListTile(
-                  title: const Text('Error loading categories'),
-                  subtitle: Text(snapshot.error.toString()),
-                );
+                return ListTile(title: Text(l10n.errorLoadingCategories), subtitle: Text(snapshot.error.toString()));
               }
 
               _categories = snapshot.data ?? _categories;
 
               if (_categories.isEmpty) {
-                return const ListTile(
-                  title: Text('No categories yet.'),
-                  subtitle: Text('Tap the "+" icon above to add a category.'),
-                );
+                return ListTile(title: Text(l10n.noCategoriesYet), subtitle: Text(l10n.tapToAddCategory));
               }
 
               return ListTile(
@@ -214,14 +295,20 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                       color: Colors.transparent,
                       child: InkWell(
                         borderRadius: BorderRadius.circular(16),
-                        onTap: () => _handleCategoryTap(category),
+                        onTap: () async {
+                          await _handleCategoryTap(category);
+                          showStatus(l10n.editedCategory(category.name!));
+                        },
                         child: Chip(
                           label: Text(category.name!, style: TextStyle(color: textColor, fontSize: 16)),
                           backgroundColor: categoryColor,
                           shape: RoundedRectangleBorder(side: BorderSide.none, borderRadius: BorderRadius.circular(12)),
                           deleteIcon: const Icon(Icons.close, size: 20),
                           deleteIconColor: textColor,
-                          onDeleted: () => _handleCategoryDelete(category)
+                          onDeleted: () {
+                            _handleCategoryDelete(category);
+                            showStatus(l10n.deletedCategory(category.name!));
+                          },
                         ),
                       ),
                     );
@@ -233,16 +320,16 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
           // --- About ---
           const Divider(),
-          ListTile(title: const Text('About'), subtitle: const Text('Rembirth v1.0.0'), onTap: () => {}),
+          ListTile(title: Text(l10n.about), subtitle: const Text('Rembirth v1.0.0'), onTap: () => {}),
 
           // --- Restore Defaults ---
           const Divider(),
           ListTile(
-            title: const Text('Restore Defaults', style: TextStyle(color: Colors.red)),
+            title: Text(l10n.restoreDefaults, style: const TextStyle(color: Colors.red)),
             trailing: const Icon(Icons.restore, color: Colors.red, size: 32),
             onTap: () async {
               await context.read<SettingsController>().restoreDefaults();
-              showStatus('Restored default settings');
+              showStatus(l10n.restoredDefaultSettings);
             },
           ),
         ],
