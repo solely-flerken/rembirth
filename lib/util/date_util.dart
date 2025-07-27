@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:intl/intl.dart';
 
 class DateUtil {
   static int daysUntilDate(DateTime from, DateTime to) {
@@ -16,6 +17,12 @@ class DateUtil {
     final hour = time.hour.toString().padLeft(2, '0');
     final minute = time.minute.toString().padLeft(2, '0');
     return '$hour:$minute';
+  }
+
+  static String getLocalizedMonthName(BuildContext context, int month){
+    final locale = Localizations.localeOf(context).toString();
+    final date = DateTime(2000, month);
+    return DateFormat('MMMM', locale).format(date);
   }
 }
 
