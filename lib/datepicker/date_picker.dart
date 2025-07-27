@@ -49,12 +49,16 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   DatePickerStep? stopStep;
   DatePickerStep? _previousStepBeforeInfo;
 
+  final List<DatePickerStep> _history = [];
+
   @override
   void initState() {
     super.initState();
 
     currentDatePickerStep = widget.initialStep;
     stopStep = widget.stopStep ?? DatePickerStep.day;
+
+    _history.add(currentDatePickerStep!);
 
     if (widget.initialDate != null) {
       selectedYear = widget.initialDate!.year;
@@ -78,12 +82,25 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     _controller = PageController(initialPage: _initialPageIndex);
 
     _controller.addListener(() {
-      final currentIndex = _controller.page?.round();
-      if (currentIndex != null && currentDatePickerStep?.pageIndex != currentIndex) {
-        setState(() {
-          currentDatePickerStep = DatePickerStep.fromIndex(currentIndex);
-        });
+      final newIndex  = _controller.page?.round();
+      if (newIndex  == null) return;
+
+      final newStep = DatePickerStep.fromIndex(newIndex);
+      if (newStep == currentDatePickerStep) return;
+
+      // If we jump to a step already in our history,
+      // we remove all the steps that came after it.
+      // Otherwise, it's a new forward step.
+      if (_history.contains(newStep)) {
+        final indexInHistory = _history.indexOf(newStep);
+        _history.removeRange(indexInHistory + 1, _history.length);
+      } else {
+        _history.add(newStep);
       }
+
+      setState(() {
+        currentDatePickerStep = newStep;
+      });
     });
   }
 
@@ -91,6 +108,13 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   void dispose() {
     _controller.dispose();
     super.dispose();
+  }
+
+  void _stepBack() {
+    if (_history.length > 1) {
+      _history.removeLast();
+      _controller.jumpToPage(_history.last.pageIndex);
+    }
   }
 
   void _nextPage() async {
@@ -101,6 +125,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
       if (!mounted) return;
       Navigator.pop(context, PartialDate(year: selectedYear, month: selectedMonth!, day: selectedDay!));
+      return;
     }
 
     if (_controller.page! < 3) {
@@ -224,91 +249,100 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Dialog(
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
-      child: SizedBox(
-        width: double.maxFinite,
-        height: 560,
-        child: Column(
-          children: [
-            // Date display
-            Padding(
-              padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
-              child: SizedBox(
-                height: 40,
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    Align(
-                      alignment: Alignment.center,
-                      child: SizedBox(
-                        width: double.infinity,
-                        child: Text.rich(
-                          TextSpan(
-                            style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
-                            children: _buildFormattedDateSpans(),
+    return PopScope(
+      canPop: _history.length <= 1,
+      onPopInvokedWithResult: (bool didPop, PartialDate? result) {
+        if (didPop) {
+          return;
+        }
+        _stepBack();
+      },
+      child: Dialog(
+        shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20))),
+        child: SizedBox(
+          width: double.maxFinite,
+          height: 560,
+          child: Column(
+            children: [
+              // Date display
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 16, horizontal: 16),
+                child: SizedBox(
+                  height: 40,
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      Align(
+                        alignment: Alignment.center,
+                        child: SizedBox(
+                          width: double.infinity,
+                          child: Text.rich(
+                            TextSpan(
+                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
+                              children: _buildFormattedDateSpans(),
+                            ),
+                            textAlign: TextAlign.center,
                           ),
-                          textAlign: TextAlign.center,
                         ),
                       ),
-                    ),
 
-                    // Info button
-                    if (currentDatePickerStep != DatePickerStep.info)
-                      Positioned(
-                        right: -8,
-                        top: 0,
-                        bottom: 0,
-                        child: Material(
-                          type: MaterialType.transparency,
-                          shape: const CircleBorder(),
-                          child: InkWell(
-                            borderRadius: BorderRadius.circular(24),
-                            onTap: () {
-                              _previousStepBeforeInfo = currentDatePickerStep;
-                              _controller.jumpToPage(DatePickerStep.info.pageIndex);
-                            },
-                            child: const Padding(padding: EdgeInsets.all(8), child: Icon(Icons.info_outline, size: 24)),
+                      // Info button
+                      if (currentDatePickerStep != DatePickerStep.info)
+                        Positioned(
+                          right: -8,
+                          top: 0,
+                          bottom: 0,
+                          child: Material(
+                            type: MaterialType.transparency,
+                            shape: const CircleBorder(),
+                            child: InkWell(
+                              borderRadius: BorderRadius.circular(24),
+                              onTap: () {
+                                _previousStepBeforeInfo = currentDatePickerStep;
+                                _controller.jumpToPage(DatePickerStep.info.pageIndex);
+                              },
+                              child: const Padding(padding: EdgeInsets.all(8), child: Icon(Icons.info_outline, size: 24)),
+                            ),
                           ),
                         ),
-                      ),
-                  ],
+                    ],
+                  ),
                 ),
               ),
-            ),
 
-            // Splitter
-            Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: const Divider(thickness: 2)),
+              // Splitter
+              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: const Divider(thickness: 2)),
 
-            Expanded(
-              child: PageView(
-                controller: _controller,
-                physics: const NeverScrollableScrollPhysics(),
-                children: [
-                  DatePickerInfoWidget(onInfoRead: () => _onInfoRead()),
-                  YearPickerWidget(
-                    startYear: 1900,
-                    initialYear: selectedYear,
-                    key: const ValueKey('YearPicker'),
-                    onYearSelected: _onYearSelected,
-                  ),
-                  MonthPicker(
-                    initialMonth: selectedMonth,
-                    key: const ValueKey('MonthPicker'),
-                    onMonthSelected: _onMonthSelected,
-                  ),
-                  if (selectedMonth != null)
-                    DayPicker(
-                      year: selectedYear,
-                      month: selectedMonth!,
-                      initialDay: selectedDay,
-                      key: const ValueKey('DayPicker'),
-                      onDaySelected: _onDaySelected,
+              Expanded(
+                child: PageView(
+                  controller: _controller,
+                  physics: const NeverScrollableScrollPhysics(),
+                  children: [
+                    DatePickerInfoWidget(onInfoRead: () => _onInfoRead()),
+                    YearPickerWidget(
+                      startYear: 1900,
+                      initialYear: selectedYear,
+                      key: const ValueKey('YearPicker'),
+                      onYearSelected: _onYearSelected,
                     ),
-                ].whereType<Widget>().toList(),
+                    MonthPicker(
+                      initialMonth: selectedMonth,
+                      key: const ValueKey('MonthPicker'),
+                      onMonthSelected: _onMonthSelected,
+                    ),
+                    if (selectedMonth != null)
+                      DayPicker(
+                        year: selectedYear,
+                        month: selectedMonth!,
+                        initialDay: selectedDay,
+                        key: const ValueKey('DayPicker'),
+                        onDaySelected: _onDaySelected,
+                      ),
+                  ].whereType<Widget>().toList(),
+                ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
