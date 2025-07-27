@@ -1,18 +1,3 @@
-const Map<int, String> months = {
-  DateTime.january: 'January',
-  DateTime.february: 'February',
-  DateTime.march: 'March',
-  DateTime.april: 'April',
-  DateTime.may: 'May',
-  DateTime.june: 'June',
-  DateTime.july: 'July',
-  DateTime.august: 'August',
-  DateTime.september: 'September',
-  DateTime.october: 'October',
-  DateTime.november: 'November',
-  DateTime.december: 'December',
-};
-
 const List<String> weekdays = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
 enum DatePickerStep {
