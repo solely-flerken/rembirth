@@ -14,9 +14,15 @@ class DayPicker extends StatelessWidget {
     final int effectiveYear = year ?? 2000;
 
     final localizations = MaterialLocalizations.of(context);
+    final int firstDayOfWeek = localizations.firstDayOfWeekIndex;
+    final List<String> localizedOrderedWeekdayHeaders = [
+      ...weekdays.sublist(firstDayOfWeek),
+      ...weekdays.sublist(0, firstDayOfWeek),
+    ];
+
     final int firstDayOffset = DateUtils.firstDayOffset(effectiveYear, month, localizations);
     final int daysInMonth = DateUtils.getDaysInMonth(effectiveYear, month);
-    final int itemCount = weekdays.length + firstDayOffset + daysInMonth;
+    final int itemCount = 7 + firstDayOffset + daysInMonth;
 
     final DateTime today = DateTime.now();
     final bool isCurrentMonth = today.month == month && today.year == year;
@@ -36,18 +42,18 @@ class DayPicker extends StatelessWidget {
           ),
           itemBuilder: (context, index) {
             // Weekday headers
-            if (index < weekdays.length) {
+            if (index < 7) {
               return Center(
-                child: Text(weekdays[index], style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(localizedOrderedWeekdayHeaders[index], style: const TextStyle(fontWeight: FontWeight.bold)),
               );
             }
 
             // Empty slots before 1st day
-            if (index < weekdays.length + firstDayOffset) {
+            if (index < 7 + firstDayOffset) {
               return const SizedBox.shrink();
             }
 
-            final int day = index - weekdays.length - firstDayOffset + 1;
+            final int day = index - 7 - firstDayOffset + 1;
             final bool isToday = isCurrentMonth && today.day == day;
             final bool isSelected = initialDay == day;
 
