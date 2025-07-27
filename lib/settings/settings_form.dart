@@ -91,8 +91,9 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           ? Locale(newLanguageCode)
           : WidgetsBinding.instance.platformDispatcher.locale;
 
-      AppLocalizations.delegate.load(locale).then((newL10n) {
-        final message = newL10n.settings_language_status_set(newLanguageCode ?? newL10n.settings_option_system);
+      AppLocalizations.delegate.load(locale).then((l10n) {
+        final languageName = LanguageLocal.getLanguageNativeName(locale.languageCode);
+        final message = l10n.settings_language_status_set(languageName);
         showStatus(message);
       });
     }
