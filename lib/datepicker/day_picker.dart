@@ -11,7 +11,7 @@ class DayPicker extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final int effectiveYear = year ?? 2000;
+    final int effectiveYear = year ?? DateTime.now().year;
 
     final localizations = MaterialLocalizations.of(context);
     final int firstDayOfWeek = localizations.firstDayOfWeekIndex;
