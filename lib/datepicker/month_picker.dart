@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rembirth/datepicker/util.dart';
+
+import '../util/date_util.dart';
 
 class MonthPicker extends StatelessWidget {
   final int? initialMonth;
@@ -17,7 +18,7 @@ class MonthPicker extends StatelessWidget {
         width: double.infinity,
         height: 400,
         child: GridView.builder(
-          itemCount: months.length,
+          itemCount: 12,
           gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
             crossAxisCount: 3,
             crossAxisSpacing: 10,
@@ -27,7 +28,7 @@ class MonthPicker extends StatelessWidget {
           itemBuilder: (context, index) {
             // +1 because DateTime.January = 1 and index start at 0
             final int month = index + 1;
-            final String monthName = months[month]!;
+            final String monthName = DateUtil.getLocalizedMonthName(context, month);
 
             final bool isCurrentMonth = month == currentMonth;
             final bool isSelected = month == initialMonth;

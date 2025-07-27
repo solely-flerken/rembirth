@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:rembirth/datepicker/util.dart';
 
+import '../util/date_util.dart';
 import 'date_picker_info.dart';
 
 class DatePickerInfoWidget extends StatefulWidget {
@@ -19,7 +20,7 @@ class _DatePickerInfoWidgetState extends State<DatePickerInfoWidget> {
 
   List<TextSpan> _buildFormattedDateSpans(BuildContext context) {
     final int currentYear = selected.year;
-    final String monthName = months[selected.month]!;
+    final String monthName = DateUtil.getLocalizedMonthName(context, selected.month);
     final int day = selected.day;
 
     final highlightColor = Theme.of(context).colorScheme.primary;
@@ -59,7 +60,7 @@ class _DatePickerInfoWidgetState extends State<DatePickerInfoWidget> {
       case DatePickerStep.day:
         return now.day.toString();
       case DatePickerStep.month:
-        return months[now.month]!;
+        return DateUtil.getLocalizedMonthName(context, now.month);
       case DatePickerStep.year:
         return now.year.toString();
       default:
@@ -72,7 +73,7 @@ class _DatePickerInfoWidgetState extends State<DatePickerInfoWidget> {
       case DatePickerStep.day:
         return selected.day.toString();
       case DatePickerStep.month:
-        return months[selected.month]!;
+        return DateUtil.getLocalizedMonthName(context, selected.month);
       case DatePickerStep.year:
         return selected.year.toString();
       default:

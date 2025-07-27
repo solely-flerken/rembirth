@@ -10,6 +10,7 @@ import '../datepicker/date_picker.dart';
 import '../datepicker/util.dart';
 import '../model/birthday_entry.dart';
 import '../datepicker/partial_date.dart';
+import '../util/date_util.dart';
 
 class BirthdayEntryCreationForm extends StatefulWidget {
   final BirthdayEntry? initialEntry;
@@ -117,7 +118,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
     }
 
     final selectedDay = _selectedDate!.day;
-    final monthName = months[_selectedDate!.month]!;
+    final monthName = DateUtil.getLocalizedMonthName(context, _selectedDate!.month);
     final selectedYear = _selectedDate!.year;
 
     return [

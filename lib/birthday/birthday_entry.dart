@@ -2,7 +2,6 @@ import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
 import 'package:rembirth/model/birthday_entry.dart';
 
-import '../datepicker/util.dart';
 import '../util/date_util.dart';
 
 class BirthdayEntryTile extends StatelessWidget {
@@ -37,7 +36,7 @@ class BirthdayEntryTile extends StatelessWidget {
     final nextBirthdayDate = now.add(Duration(days: daysUntil));
 
     final weekdayName = DateFormat.EEEE().format(nextBirthdayDate);
-    final monthName = months[month];
+    final monthName = DateUtil.getLocalizedMonthName(context, month);
 
     final birthdayString = year != null ? "$day $monthName $year" : "$day $monthName";
 

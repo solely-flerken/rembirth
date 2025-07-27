@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rembirth/datepicker/info.dart';
 import 'package:rembirth/datepicker/partial_date.dart';
 import 'package:rembirth/datepicker/util.dart';
+import '../util/date_util.dart';
 import 'year_picker.dart';
 import 'month_picker.dart';
 import 'day_picker.dart';
@@ -177,7 +178,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     if (selectedMonth != null) {
       parts.add(
         TextSpan(
-          text: months[selectedMonth!]!,
+          text: DateUtil.getLocalizedMonthName(context, selectedMonth!),
           style: TextStyle(color: currentDatePickerStep == DatePickerStep.month ? highlightColor : null),
           recognizer: TapGestureRecognizer()
             ..onTap = () {
