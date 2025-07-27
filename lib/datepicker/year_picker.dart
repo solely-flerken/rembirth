@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+import '../l10n/app_localizations.dart';
+
 class YearPickerWidget extends StatelessWidget {
   final int startYear;
   final int? initialYear;
@@ -9,6 +11,7 @@ class YearPickerWidget extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final int currentYear = DateTime.now().year;
 
     // Calculate the total number of years, rounded up to a multiple of 3
@@ -63,7 +66,7 @@ class YearPickerWidget extends StatelessWidget {
                 elevation: isSelected || isCurrentYear ? 5 : 2,
                 child: Center(
                   child: Text(
-                    year == null ? 'Unknown' : year.toString(),
+                    year == null ? l10n.date_unknown_value : year.toString(),
                     style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: textColor),
                   ),
                 ),

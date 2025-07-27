@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:rembirth/datepicker/util.dart';
 
+import '../l10n/app_localizations.dart';
 import '../util/date_util.dart';
 import 'date_picker_info.dart';
 
@@ -83,6 +84,8 @@ class _DatePickerInfoWidgetState extends State<DatePickerInfoWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     Color primaryColor = Theme.of(context).colorScheme.primary.withAlpha(200);
     Color borderColor = Theme.of(context).colorScheme.secondary.withAlpha(200);
     Color tertiaryColor = Theme.of(context).colorScheme.tertiary.withAlpha(200);
@@ -102,24 +105,24 @@ class _DatePickerInfoWidgetState extends State<DatePickerInfoWidget> {
                 ),
               ),
             ),
-            const Padding(
+            Padding(
               padding: EdgeInsets.only(bottom: 16),
               child: Text(
-                'Tap day, month, or year to change the selection',
+                l10n.info_instructions,
                 style: TextStyle(fontSize: 14),
                 textAlign: TextAlign.center,
               ),
             ),
             DatePickerInfoCard(
-              label: 'Currently selected date',
+              label: l10n.info_selected_date,
               text: _getSelectedDateText(),
               backgroundColor: primaryColor,
               textColor: Colors.white,
             ),
-            DatePickerInfoCard(label: 'Current date', text: _getCurrentDateText(), borderColor: borderColor),
+            DatePickerInfoCard(label: l10n.info_current_date, text: _getCurrentDateText(), borderColor: borderColor),
             DatePickerInfoCard(
-              label: 'Special value',
-              text: 'Unknown',
+              label: l10n.info_special_value,
+              text: l10n.date_unknown_value,
               backgroundColor: tertiaryColor,
               textColor: Colors.white,
             ),
@@ -134,7 +137,7 @@ class _DatePickerInfoWidgetState extends State<DatePickerInfoWidget> {
                   padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                 ),
-                child: const Text(style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600), 'Understood'),
+                child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600), l10n.info_confirm),
               ),
             ),
           ],

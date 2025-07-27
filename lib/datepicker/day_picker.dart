@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:rembirth/datepicker/util.dart';
+import 'package:intl/date_symbols.dart';
+import 'package:intl/intl.dart';
 
 class DayPicker extends StatelessWidget {
   final int month;
@@ -9,17 +10,23 @@ class DayPicker extends StatelessWidget {
 
   const DayPicker({super.key, required this.month, this.year, this.initialDay, required this.onDaySelected});
 
+  List<String> _getLocalizedShortWeekdays(BuildContext context) {
+    final locale = Localizations.localeOf(context).toLanguageTag();
+
+    final DateSymbols symbols = DateFormat.E(locale).dateSymbols;
+    final weekdays = symbols.SHORTWEEKDAYS;
+
+    final int firstDay = MaterialLocalizations.of(context).firstDayOfWeekIndex;
+    return [...weekdays.sublist(firstDay), ...weekdays.sublist(0, firstDay)];
+  }
+
   @override
   Widget build(BuildContext context) {
+    final localizations = MaterialLocalizations.of(context);
+
     final int effectiveYear = year ?? DateTime.now().year;
 
-    final localizations = MaterialLocalizations.of(context);
-    final int firstDayOfWeek = localizations.firstDayOfWeekIndex;
-    final List<String> localizedOrderedWeekdayHeaders = [
-      ...weekdays.sublist(firstDayOfWeek),
-      ...weekdays.sublist(0, firstDayOfWeek),
-    ];
-
+    List<String> weekdayHeaders = _getLocalizedShortWeekdays(context);
     final int firstDayOffset = DateUtils.firstDayOffset(effectiveYear, month, localizations);
     final int daysInMonth = DateUtils.getDaysInMonth(effectiveYear, month);
     final int itemCount = 7 + firstDayOffset + daysInMonth;
@@ -44,7 +51,7 @@ class DayPicker extends StatelessWidget {
             // Weekday headers
             if (index < 7) {
               return Center(
-                child: Text(localizedOrderedWeekdayHeaders[index], style: const TextStyle(fontWeight: FontWeight.bold)),
+                child: Text(weekdayHeaders [index], style: const TextStyle(fontWeight: FontWeight.bold)),
               );
             }
 

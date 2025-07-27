@@ -8,6 +8,7 @@ import 'package:rembirth/util/logger.dart';
 
 import '../datepicker/date_picker.dart';
 import '../datepicker/util.dart';
+import '../l10n/app_localizations.dart';
 import '../model/birthday_entry.dart';
 import '../datepicker/partial_date.dart';
 import '../util/date_util.dart';
@@ -55,6 +56,8 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
   }
 
   void _submitForm() {
+    final l10n = AppLocalizations.of(context)!;
+
     logger.d(
       'Creation form: Attempting to submit with values -> '
       'name: $_name, '
@@ -63,8 +66,8 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
     );
 
     setState(() {
-      _nameError = _name == null || _name!.trim().isEmpty ? 'Name is required' : null;
-      _dateError = _selectedDate == null ? 'Date is required' : null;
+      _nameError = _name == null || _name!.trim().isEmpty ? l10n.name_validation_error : null;
+      _dateError = _selectedDate == null ? l10n.entry_creation_date_validation_error : null;
     });
 
     // Validate
@@ -113,8 +116,10 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
   }
 
   List<TextSpan> _buildFormattedDateSpans() {
+    final l10n = AppLocalizations.of(context)!;
+
     if (_selectedDate == null) {
-      return [const TextSpan(text: 'Select a date')];
+      return [TextSpan(text: l10n.select_a_date)];
     }
 
     final selectedDay = _selectedDate!.day;
@@ -143,7 +148,25 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
+
+    /// Construct page title
+    final title = l10n.entry_creation_label;
+
+    final words = title.split(' ');
+    final highlightIndex = words.length ~/ 2;
+
+    List<InlineSpan> spans = [];
+
+    for (var i = 0; i < words.length; i++) {
+      spans.add(
+        TextSpan(
+          text: i < words.length - 1 ? '${words[i]} ' : words[i],
+          style: TextStyle(color: i == highlightIndex ? theme.colorScheme.primary : null),
+        ),
+      );
+    }
 
     return Dialog(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
@@ -161,15 +184,10 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
                   child: Text.rich(
                     TextSpan(
                       style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                      children: [
-                        TextSpan(text: 'Create '),
-                        TextSpan(
-                          text: 'Birthday',
-                          style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                        ),
-                        TextSpan(text: ' Entry'),
-                      ],
+                      children: spans,
                     ),
+                    overflow: TextOverflow.ellipsis,
+                    maxLines: 1,
                   ),
                 ),
               ),
@@ -183,7 +201,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
                 style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
                 controller: nameController,
                 decoration: InputDecoration(
-                  labelText: 'Name',
+                  labelText: l10n.name,
                   border: const OutlineInputBorder(),
                   errorText: _nameError,
                 ),
@@ -199,9 +217,9 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
               DropdownButtonFormField2<BirthdayEntryCategory?>(
                 value: _category,
                 items: [
-                  const DropdownMenuItem<BirthdayEntryCategory?>(value: null, child: Text('None')),
+                  DropdownMenuItem<BirthdayEntryCategory?>(value: null, child: Text(l10n.entry_creation_no_category)),
                   ..._categories.map((category) {
-                    return DropdownMenuItem(value: category, child: Text(category.name ?? 'Unknown'));
+                    return DropdownMenuItem(value: category, child: Text(category.name ?? l10n.entry_creation_unknown_category));
                   }),
                 ],
                 onChanged: (value) {
@@ -210,7 +228,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
                   });
                 },
                 style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20, color: theme.colorScheme.onSurface),
-                decoration: const InputDecoration(labelText: 'Category', border: OutlineInputBorder()),
+                decoration: InputDecoration(labelText: l10n.entry_creation_category, border: const OutlineInputBorder()),
                 dropdownStyleData: DropdownStyleData(decoration: BoxDecoration(borderRadius: BorderRadius.circular(8))),
               ),
               const SizedBox(height: 16),
@@ -219,7 +237,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
               InkWell(
                 onTap: () => _openDatePicker(context, DatePickerStep.year, null, _selectedDate),
                 child: InputDecorator(
-                  decoration: InputDecoration(labelText: 'Date', border: OutlineInputBorder(), errorText: _dateError),
+                  decoration: InputDecoration(labelText: l10n.entry_creation_date, border: OutlineInputBorder(), errorText: _dateError),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
@@ -247,7 +265,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
                   TextButton(
                     onPressed: _cancelForm,
                     style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0)),
-                    child: const Text(style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400), 'Cancel'),
+                    child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400), l10n.cancel),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
@@ -258,7 +276,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    child: const Text(style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600), 'Save'),
+                    child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600), l10n.save),
                   ),
                 ],
               ),

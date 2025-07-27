@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:rembirth/l10n/app_localizations.dart';
 import 'package:rembirth/model/birthday_entry.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/notifications/notification_service.dart';
@@ -269,11 +270,13 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   }
 
   Widget _buildEmptyState() {
+    final l10n = AppLocalizations.of(context)!;
+
     return SafeArea(
       child: Column(
         children: [
           _builtActionBar(const []),
-          const Expanded(child: Center(child: Text("No birthday entries found. Tap '+' to add one!"))),
+          Expanded(child: Center(child: Text(l10n.list_no_entries_found))),
         ],
       ),
     );
@@ -393,7 +396,9 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   }
 
   Widget _builtActionBar(Iterable<int> categoryIds) {
+    final l10n = AppLocalizations.of(context)!;
     final settingsController = context.watch<SettingsController>();
+
     final isToolbarBottom = settingsController.settings.positionToolbarBottom;
     final bool isEntrySelected = _selectedEntryId != null;
     final bool canExpandCollapse = _isCategoryView && categoryIds.isNotEmpty;
@@ -444,7 +449,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                             size: 24,
                             color: Theme.of(context).colorScheme.primary,
                           ),
-                          title: Text(_isCategoryView ? 'Show as List' : 'Show as Categories'),
+                          title: Text(_isCategoryView ? l10n.list_show_as_list : l10n.list_show_as_categories),
                         ),
                       ),
                     ),
@@ -455,7 +460,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: ListTile(
                           leading: Icon(Icons.unfold_more, size: 24, color: Theme.of(context).colorScheme.primary),
-                          title: Text('Expand All'),
+                          title: Text(l10n.list_expand_all),
                         ),
                       ),
                     ),
@@ -466,7 +471,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: ListTile(
                           leading: Icon(Icons.unfold_less, size: 24, color: Theme.of(context).colorScheme.primary),
-                          title: Text('Collapse All'),
+                          title: Text(l10n.list_collapse_all),
                         ),
                       ),
                     ),
@@ -477,7 +482,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: ListTile(
                           leading: Icon(Icons.settings, size: 24, color: Theme.of(context).colorScheme.primary),
-                          title: Text('Settings'),
+                          title: Text(l10n.list_settings),
                         ),
                       ),
                     ),

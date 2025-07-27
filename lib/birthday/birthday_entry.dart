@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:intl/intl.dart';
+import 'package:rembirth/l10n/app_localizations.dart';
 import 'package:rembirth/model/birthday_entry.dart';
 
 import '../util/date_util.dart';
@@ -11,18 +12,21 @@ class BirthdayEntryTile extends StatelessWidget {
 
   const BirthdayEntryTile({super.key, required this.entry, this.onTap, this.isSelected = false});
 
-  String _formatBirthdayCountdown(int daysUntil, String weekdayName) {
+  String _formatBirthdayCountdown(BuildContext context, int daysUntil, String weekdayName) {
+    final l10n = AppLocalizations.of(context)!;
+
     if (daysUntil == 0) {
-      return "Birthday is today";
+      return l10n.entry_birthday_today;
     } else if (daysUntil == 1) {
-      return "Tomorrow on $weekdayName";
+      return l10n.entry_birthday_tomorrow(weekdayName);
     } else {
-      return "In $daysUntil days on $weekdayName";
+      return l10n.entry_birthday_in_days(daysUntil, weekdayName);
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
     final now = DateTime.now();
@@ -35,7 +39,8 @@ class BirthdayEntryTile extends StatelessWidget {
     final daysUntil = DateUtil.daysUntilDate(now, birthdayDate);
     final nextBirthdayDate = now.add(Duration(days: daysUntil));
 
-    final weekdayName = DateFormat.EEEE().format(nextBirthdayDate);
+    final locale = Localizations.localeOf(context).toString();
+    final weekdayName = DateFormat.EEEE(locale).format(nextBirthdayDate);
     final monthName = DateUtil.getLocalizedMonthName(context, month);
 
     final birthdayString = year != null ? "$day $monthName $year" : "$day $monthName";
@@ -45,13 +50,13 @@ class BirthdayEntryTile extends StatelessWidget {
       margin: const EdgeInsets.symmetric(vertical: 6, horizontal: 12),
       child: ListTile(
         leading: Icon(Icons.cake, color: theme.colorScheme.primary),
-        title: Text(entry.name ?? "Unnamed", style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text(entry.name ?? l10n.entry_unnamed, style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18)),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Text(birthdayString),
             const SizedBox(height: 2),
-            Text(_formatBirthdayCountdown(daysUntil, weekdayName), style: const TextStyle(color: Colors.grey)),
+            Text(_formatBirthdayCountdown(context, daysUntil, weekdayName), style: const TextStyle(color: Colors.grey)),
           ],
         ),
         trailing: daysUntil == 0 ? const Icon(Icons.celebration, color: Colors.pinkAccent, size: 28) : null,

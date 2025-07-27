@@ -2,6 +2,7 @@ import 'dart:math';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
+import 'package:rembirth/l10n/app_localizations.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/util/logger.dart';
@@ -72,6 +73,26 @@ class _BirthdayEntryCategoryCreationFormState extends State<BirthdayEntryCategor
 
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+    final theme = Theme.of(context);
+
+    /// Construct page title
+    final title = widget.initialCategory == null ? l10n.label_create_category : l10n.label_edit_category;
+
+    final words = title.split(' ');
+    final highlightIndex = words.length ~/ 2;
+
+    List<InlineSpan> spans = [];
+
+    for (var i = 0; i < words.length; i++) {
+      spans.add(
+        TextSpan(
+          text: i < words.length - 1 ? '${words[i]} ' : words[i],
+          style: TextStyle(color: i == highlightIndex ? theme.colorScheme.primary : null),
+        ),
+      );
+    }
+
     return Dialog(
       shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
       child: SizedBox(
@@ -95,13 +116,7 @@ class _BirthdayEntryCategoryCreationFormState extends State<BirthdayEntryCategor
                             child: Text.rich(
                               TextSpan(
                                 style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                                children: [
-                                  TextSpan(text: 'Create '),
-                                  TextSpan(
-                                    text: 'Category',
-                                    style: TextStyle(color: Theme.of(context).colorScheme.primary),
-                                  ),
-                                ],
+                                children: spans,
                               ),
                             ),
                           ),
@@ -115,10 +130,10 @@ class _BirthdayEntryCategoryCreationFormState extends State<BirthdayEntryCategor
                         TextFormField(
                           style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
                           controller: _nameController,
-                          decoration: InputDecoration(labelText: 'Name', border: const OutlineInputBorder()),
+                          decoration: InputDecoration(labelText: l10n.name, border: const OutlineInputBorder()),
                           validator: (value) {
                             if (value == null || value.trim().isEmpty) {
-                              return 'Category name is required';
+                              return l10n.category_name_validation_error;
                             }
                             return null;
                           },
@@ -149,7 +164,7 @@ class _BirthdayEntryCategoryCreationFormState extends State<BirthdayEntryCategor
                     style: TextButton.styleFrom(
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
                     ),
-                    child: const Text(style: TextStyle(fontSize: 18, fontWeight: FontWeight.w400), 'Cancel'),
+                    child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400), l10n.cancel),
                   ),
                   const SizedBox(width: 12),
                   ElevatedButton(
@@ -160,7 +175,7 @@ class _BirthdayEntryCategoryCreationFormState extends State<BirthdayEntryCategor
                       padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
                       shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     ),
-                    child: const Text(style: TextStyle(fontSize: 18, fontWeight: FontWeight.w600), 'Save'),
+                    child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600), l10n.save),
                   ),
                 ],
               ),

@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:rembirth/datepicker/info.dart';
 import 'package:rembirth/datepicker/partial_date.dart';
 import 'package:rembirth/datepicker/util.dart';
+import 'package:rembirth/l10n/app_localizations.dart';
 import '../util/date_util.dart';
 import 'year_picker.dart';
 import 'month_picker.dart';
@@ -152,8 +153,10 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
   }
 
   List<TextSpan> _buildFormattedDateSpans() {
+    final l10n = AppLocalizations.of(context)!;
+
     if (currentDatePickerStep == DatePickerStep.info) {
-      return [const TextSpan(text: 'Info')];
+      return [TextSpan(text: l10n.info_label)];
     }
 
     final highlightColor = Theme.of(context).colorScheme.primary;
@@ -205,7 +208,7 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
 
     // No parts were added, nothing is selected
     if (parts.isEmpty) {
-      return [const TextSpan(text: 'Select a date')];
+      return [TextSpan(text: l10n.select_a_date)];
     }
 
     final List<TextSpan> finalSpans = [];
