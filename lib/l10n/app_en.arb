@@ -106,7 +106,7 @@
   "entry_birthday_today": "Birthday is today",
 
   "entry_birthday_tomorrow": "Tomorrow on {weekday}",
-  "@birthdayTomorrow": {
+  "@entry_birthday_tomorrow": {
     "placeholders": {
       "weekday": {
         "type": "String"
@@ -115,7 +115,7 @@
   },
 
   "entry_birthday_in_days": "In {days} days on {weekday}",
-  "@birthdayInDays": {
+  "@entry_birthday_in_days": {
     "placeholders": {
       "days": {
         "type": "int"
