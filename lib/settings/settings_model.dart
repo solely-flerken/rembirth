@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:rembirth/settings/themes.dart';
+import 'package:rembirth/util/locale_util.dart';
 
 class Settings {
   ThemeSetting theme;
@@ -7,7 +8,7 @@ class Settings {
   bool notificationsEnabled;
   int notificationTimeHour;
   int notificationTimeMinute;
-  String? languageCode;
+  String? localeCode;
 
   Settings({
     required this.theme,
@@ -15,7 +16,7 @@ class Settings {
     required this.notificationsEnabled,
     required this.notificationTimeHour,
     required this.notificationTimeMinute,
-    required this.languageCode,
+    required this.localeCode,
   });
 
   factory Settings.defaults() {
@@ -25,15 +26,18 @@ class Settings {
       notificationsEnabled: true,
       notificationTimeHour: 9,
       notificationTimeMinute: 0,
-      languageCode: null,
+      localeCode: null,
     );
   }
 
   /// Returns the stored time as a TimeOfDay object
   TimeOfDay get notificationTime => TimeOfDay(hour: notificationTimeHour, minute: notificationTimeMinute);
 
-  /// Returns a Locale object based on the saved language code
-  Locale? get locale => languageCode != null ? Locale(languageCode!) : null;
+  /// Returns a Locale object based on the saved locale code
+  Locale? get locale {
+    if (localeCode == null) return null;
+    return LocaleUtil.parseLocale(localeCode!);
+  }
 
   ThemeMode get themeMode {
     switch (theme) {

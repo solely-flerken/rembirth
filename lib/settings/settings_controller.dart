@@ -30,9 +30,9 @@ class SettingsController extends ChangeNotifier {
     await _saveAndNotify();
   }
 
-  Future<void> setLanguage(String? newLanguageCode) async {
-    if (_settings.languageCode == newLanguageCode) return;
-    _settings.languageCode = newLanguageCode;
+  Future<void> setLocale(String? newLocaleCode) async {
+    if (_settings.localeCode == newLocaleCode) return;
+    _settings.localeCode = newLocaleCode;
     await _saveAndNotify();
   }
 
@@ -81,7 +81,7 @@ class SettingsController extends ChangeNotifier {
 
     _settings.theme = defaultSettings.theme;
     _settings.positionToolbarBottom = defaultSettings.positionToolbarBottom;
-    _settings.languageCode = defaultSettings.languageCode;
+    _settings.localeCode = defaultSettings.localeCode;
     _settings.notificationsEnabled = defaultSettings.notificationsEnabled;
     _settings.notificationTimeHour = defaultSettings.notificationTimeHour;
     _settings.notificationTimeMinute = defaultSettings.notificationTimeMinute;

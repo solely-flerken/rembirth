@@ -7,7 +7,7 @@ import '../birthday/birthday_entry_category_creation_form.dart';
 import '../l10n/app_localizations.dart';
 import '../model/birthday_entry_category.dart';
 import '../save/save_manager.dart';
-import '../util/language_local.dart';
+import '../util/locale_util.dart';
 
 class SettingsPageWidget extends StatefulWidget {
   const SettingsPageWidget({super.key});
@@ -78,22 +78,22 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     await _categoryManager.delete(category.id);
   }
 
-  void _showLanguageSelectionDialog() {
+  void _showLocaleSelectionDialog() {
     final settingsController = context.read<SettingsController>();
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    void handleLanguageSelected(String? newLanguageCode) {
-      settingsController.setLanguage(newLanguageCode);
-      Navigator.pop(context);
-
-      final locale = newLanguageCode != null
-          ? Locale(newLanguageCode)
+    void handleLocaleSelected(String? newLocaleCode) {
+      final locale = newLocaleCode != null
+          ? LocaleUtil.parseLocale(newLocaleCode)
           : WidgetsBinding.instance.platformDispatcher.locale;
 
+      settingsController.setLocale(locale.toString());
+      Navigator.pop(context);
+
       AppLocalizations.delegate.load(locale).then((l10n) {
-        final languageName = LanguageLocal.getLanguageNativeName(locale.languageCode);
-        final message = l10n.settings_language_status_set(languageName);
+        final languageName = LocaleUtil.getLanguageNativeName(locale.toString());
+        final message = l10n.settings_locale_status_set(languageName);
         showStatus(message);
       });
     }
@@ -101,7 +101,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     showDialog(
       context: context,
       builder: (BuildContext context) {
-        final currentLanguageCode = settingsController.settings.languageCode;
+        final currentLocaleCode = settingsController.settings.localeCode;
 
         return SimpleDialog(
           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
@@ -111,29 +111,29 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
               child: SimpleDialogOption(
-                onPressed: () => handleLanguageSelected(null),
+                onPressed: () => handleLocaleSelected(null),
                 child: Row(
                   children: [
                     Expanded(child: Text(l10n.settings_option_system, style: TextStyle(fontSize: 16))),
-                    if (currentLanguageCode == null) const Icon(Icons.check, color: Colors.green),
+                    if (currentLocaleCode == null) const Icon(Icons.check, color: Colors.green),
                   ],
                 ),
               ),
             ),
             const Divider(indent: 16, endIndent: 16),
-            // Language options
+            // Locale options
             ...AppLocalizations.supportedLocales.map((locale) {
-              final languageCode = locale.languageCode;
-              final isSelected = languageCode == currentLanguageCode;
+              final localeCode = locale.toString();
+              final isSelected = localeCode == currentLocaleCode;
 
               return SimpleDialogOption(
-                onPressed: () => handleLanguageSelected(languageCode),
+                onPressed: () => handleLocaleSelected(localeCode),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
                   child: Row(
                     children: [
                       Expanded(
-                        child: Text(LanguageLocal.getLanguageNativeName(languageCode), style: TextStyle(fontSize: 16)),
+                        child: Text(LocaleUtil.getLanguageNativeName(localeCode), style: TextStyle(fontSize: 16)),
                       ),
                       if (isSelected) const Icon(Icons.check, color: Colors.green),
                     ],
@@ -218,10 +218,10 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           ListTile(
             title: Text(_l10n.settings_language_label),
             subtitle: Text(
-              LanguageLocal.getLanguageNativeName(settingsController.settings.languageCode ?? _l10n.localeName),
+              LocaleUtil.getLanguageNativeName(settingsController.settings.localeCode ?? _l10n.localeName),
             ),
             trailing: const Icon(Icons.language, size: 32),
-            onTap: _showLanguageSelectionDialog,
+            onTap: _showLocaleSelectionDialog,
           ),
 
           // --- Notifications Toggle ---

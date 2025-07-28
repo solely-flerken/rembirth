@@ -38,10 +38,10 @@
   },
 
   "settings_language_label": "Language",
-  "settings_language_status_set": "Language set to {newLanguageCode}",
-  "@settings_language_status_set": {
+  "settings_locale_status_set": "Language set to {newLanguage}",
+  "@settings_locale_status_set": {
     "placeholders": {
-      "newLanguageCode": {
+      "newLanguage": {
         "type": "String",
         "example": "English"
       }
