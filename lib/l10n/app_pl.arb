@@ -1,0 +1,158 @@
+{
+  "@@locale": "pl",
+
+  "@_SHARED": {},
+
+  "name": "Nazwa",
+  "name_validation_error": "Nazwa jest wymagana",
+  "select_a_date": "Wybierz datę",
+  "cancel": "Anuluj",
+  "save": "Zapisz",
+
+  "@_SETTINGS_SCREEN": {},
+
+  "settings_page_label": "Ustawienia",
+  "settings_option_system": "System",
+
+  "settings_theme_label": "Motyw",
+  "settings_theme_option_light": "Jasny",
+  "settings_theme_option_dark": "Ciemny",
+  "settings_theme_status_switched_theme": "Przełączono na motyw {themeName}",
+  "@settings_theme_status_switched_theme": {
+    "placeholders": {
+      "themeName": {
+        "type": "String",
+        "example": "Ciemny"
+      }
+    }
+  },
+
+  "settings_toolbar_position_label": "Pozycja paska narzędzi",
+  "settings_toolbar_position_option_top": "Góra",
+  "settings_toolbar_position_option_bottom": "Dół",
+  "settings_toolbar_position_status_moved": "Pasek przeniesiony na {position, select, bottom {dół} top {górę} other {nieprawidłowa pozycja}}",
+  "@settings_toolbar_position_status_moved": {
+    "placeholders": {
+      "position": {}
+    }
+  },
+
+  "settings_language_label": "Język",
+  "settings_locale_status_set": "Język ustawiony na {newLanguage}",
+  "@settings_locale_status_set": {
+    "placeholders": {
+      "newLanguage": {
+        "type": "String",
+        "example": "Polski"
+      }
+    }
+  },
+
+  "settings_notifications_label": "Włącz powiadomienia",
+  "settings_notifications_status_enabled": "Powiadomienia włączone",
+  "settings_notifications_status_disabled": "Powiadomienia wyłączone",
+  "settings_notification_time_label": "Godzina powiadomień",
+  "settings_notification_time_status_set": "Godzina powiadomień ustawiona na {time}",
+  "@settings_notification_time_status_set": {
+    "placeholders": {
+      "time": {
+        "type": "String",
+        "example": "8:00"
+      }
+    }
+  },
+
+  "settings_categories_label": "Kategorie",
+  "settings_categories_error_loading": "Błąd podczas ładowania kategorii",
+  "settings_categories_no_categories": "Brak kategorii.",
+  "settings_categories_instructions": "Naciśnij ikonę '+' aby dodać kategorię.",
+  "settings_categories_status_added": "Dodano nową kategorię",
+  "settings_categories_status_edited": "Edytowano kategorię „{categoryName}”",
+  "@settings_categories_status_edited": {
+    "placeholders": {
+      "categoryName": {
+        "type": "String",
+        "example": "Znajomi"
+      }
+    }
+  },
+  "settings_categories_status_deleted": "Usunięto kategorię: „{categoryName}”",
+  "@settings_categories_status_deleted": {
+    "placeholders": {
+      "categoryName": {
+        "type": "String",
+        "example": "Znajomi"
+      }
+    }
+  },
+
+  "settings_about_label": "O aplikacji",
+
+  "settings_restore_defaults_label": "Przywróć domyślne",
+  "settings_restore_defaults_status_restored": "Przywrócono ustawienia domyślne",
+
+  "@_BIRTHDAY_ENTRY_LIST": {},
+
+  "list_no_entries_found": "Brak wpisów urodzin. Naciśnij '+' aby dodać!",
+  "list_show_as_list": "Pokaż jako listę",
+  "list_show_as_categories": "Pokaż według kategorii",
+  "list_expand_all": "Rozwiń wszystko",
+  "list_collapse_all": "Zwiń wszystko",
+  "list_settings": "Ustawienia",
+
+  "@_BIRTHDAY_ENTRY": {},
+
+  "entry_unnamed": "Bez nazwy",
+  "entry_birthday_today": "Urodziny dziś",
+
+  "entry_birthday_tomorrow": "Jutro, {weekday}",
+  "@entry_birthday_tomorrow": {
+    "placeholders": {
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+
+  "entry_birthday_in_days": "Za {days} dni, {weekday}",
+  "@entry_birthday_in_days": {
+    "placeholders": {
+      "days": {
+        "type": "int"
+      },
+      "weekday": {
+        "type": "String"
+      }
+    }
+  },
+
+  "@_BIRTHDAY_ENTRY_CREATION": {},
+
+  "entry_creation_label": "Dodaj urodziny",
+
+  "entry_creation_category": "Kategoria",
+  "entry_creation_no_category": "Brak",
+  "entry_creation_unknown_category": "Nieznana",
+
+  "entry_creation_date": "Data",
+  "entry_creation_date_validation_error": "Data jest wymagana",
+
+  "@_BIRTHDAY_CATEGORY_ENTRY_CREATION": {},
+
+  "label_create_category": "Dodaj kategorię",
+  "label_edit_category": "Edytuj kategorię",
+  "category_name_validation_error": "Nazwa kategorii jest wymagana",
+
+  "@_DATE_PICKER": {},
+
+  "date_unknown_value": "Nieznana",
+
+  "@_DATE_PICKER_INFO": {},
+
+  "info_label": "Informacje",
+  "info_instructions": "Naciśnij dzień, miesiąc lub rok, aby zmienić wybór",
+  "info_selected_date": "Wybrana data",
+  "info_current_date": "Aktualna data",
+  "info_special_value": "Wartość specjalna",
+  "info_confirm": "Rozumiem"
+}
