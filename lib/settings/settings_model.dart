@@ -1,4 +1,6 @@
+import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:rembirth/l10n/app_localizations.dart';
 import 'package:rembirth/settings/themes.dart';
 import 'package:rembirth/util/locale_util.dart';
 
@@ -34,9 +36,28 @@ class Settings {
   TimeOfDay get notificationTime => TimeOfDay(hour: notificationTimeHour, minute: notificationTimeMinute);
 
   /// Returns a Locale object based on the saved locale code
-  Locale? get locale {
-    if (localeCode == null) return null;
-    return LocaleUtil.parseLocale(localeCode!);
+  Locale get locale {
+    Locale locale;
+    if (localeCode == null) {
+      locale = WidgetsBinding.instance.platformDispatcher.locale;
+    } else {
+      locale = LocaleUtil.parseLocale(localeCode!);
+    }
+
+    final supportedLocales = AppLocalizations.supportedLocales;
+
+    final exactMatch = supportedLocales.firstWhereOrNull(
+      (l) => l.languageCode == locale.languageCode && (l.countryCode?.toLowerCase() == locale.countryCode?.toLowerCase()),
+    );
+
+    if (exactMatch != null) return exactMatch;
+
+    final languageOnlyMatch = supportedLocales.firstWhere(
+          (l) => l.languageCode == locale.languageCode,
+      orElse: () => const Locale('en'),
+    );
+
+    return languageOnlyMatch;
   }
 
   ThemeMode get themeMode {

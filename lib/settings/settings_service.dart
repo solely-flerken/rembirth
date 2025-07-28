@@ -29,8 +29,10 @@ class SettingsService {
     await prefs.setInt(kNotificationHourKey, settings.notificationTimeHour);
     await prefs.setInt(kNotificationMinuteKey, settings.notificationTimeMinute);
 
-    if(settings.localeCode != null){
+    if (settings.localeCode != null) {
       await prefs.setString(kLocaleCode, settings.localeCode!);
+    } else {
+      await prefs.remove(kLocaleCode);
     }
   }
 

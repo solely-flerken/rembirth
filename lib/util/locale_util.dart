@@ -16,12 +16,17 @@ class LocaleUtil {
     }
   }
 
-  static String getLanguageNativeName(String key) {
-    if (isoLanguages.containsKey(key)) {
-      return isoLanguages[key]?["nativeName"] ?? key;
-    } else {
-      throw Exception("Language key incorrect");
+  static String getLanguageNativeName(String localeCode){
+    if (isoLanguages.containsKey(localeCode)) {
+      return isoLanguages[localeCode]?["nativeName"] ?? localeCode;
     }
+
+    final languageCode = localeCode.split('_')[0];
+    if (isoLanguages.containsKey(languageCode)) {
+      return isoLanguages[languageCode]?["nativeName"] ?? languageCode;
+    }
+
+    throw Exception("Language key incorrect");
   }
 
   static Locale parseLocale(String code) {

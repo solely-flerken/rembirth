@@ -83,16 +83,12 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
     final l10n = AppLocalizations.of(context)!;
     final theme = Theme.of(context);
 
-    void handleLocaleSelected(String? newLocaleCode) {
-      final locale = newLocaleCode != null
-          ? LocaleUtil.parseLocale(newLocaleCode)
-          : WidgetsBinding.instance.platformDispatcher.locale;
-
-      settingsController.setLocale(locale.toString());
+    void handleLocaleSelected(Locale? newLocale) {
+      settingsController.setLocale(newLocale?.toString());
       Navigator.pop(context);
 
-      AppLocalizations.delegate.load(locale).then((l10n) {
-        final languageName = LocaleUtil.getLanguageNativeName(locale.toString());
+      AppLocalizations.delegate.load(settingsController.settings.locale).then((l10n) {
+        final languageName = LocaleUtil.getLanguageNativeName(settingsController.settings.locale.toString());
         final message = l10n.settings_locale_status_set(languageName);
         showStatus(message);
       });
@@ -127,7 +123,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
               final isSelected = localeCode == currentLocaleCode;
 
               return SimpleDialogOption(
-                onPressed: () => handleLocaleSelected(localeCode),
+                onPressed: () => handleLocaleSelected(locale),
                 child: Padding(
                   padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 4),
                   child: Row(
@@ -218,7 +214,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           ListTile(
             title: Text(_l10n.settings_language_label),
             subtitle: Text(
-              LocaleUtil.getLanguageNativeName(settingsController.settings.localeCode ?? _l10n.localeName),
+              LocaleUtil.getLanguageNativeName(_l10n.localeName),
             ),
             trailing: const Icon(Icons.language, size: 32),
             onTap: _showLocaleSelectionDialog,
