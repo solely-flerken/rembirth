@@ -1,10 +1,9 @@
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:rembirth/datepicker/info.dart';
 import 'package:rembirth/datepicker/partial_date.dart';
 import 'package:rembirth/datepicker/util.dart';
 import 'package:rembirth/l10n/app_localizations.dart';
-import '../util/date_util.dart';
+import 'date_display.dart';
 import 'year_picker.dart';
 import 'month_picker.dart';
 import 'day_picker.dart';
@@ -177,78 +176,10 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
     _nextPage();
   }
 
-  List<TextSpan> _buildFormattedDateSpans() {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (currentDatePickerStep == DatePickerStep.info) {
-      return [TextSpan(text: l10n.info_label)];
-    }
-
-    final highlightColor = Theme.of(context).colorScheme.primary;
-
-    final List<TextSpan> parts = [];
-
-    if (selectedDay != null) {
-      parts.add(
-        TextSpan(
-          text: '$selectedDay',
-          style: TextStyle(color: currentDatePickerStep == DatePickerStep.day ? highlightColor : null),
-          recognizer: TapGestureRecognizer()
-            ..onTap = () {
-              if (selectedYear != null && selectedMonth != null) {
-                _controller.jumpToPage(DatePickerStep.day.pageIndex);
-              }
-            },
-        ),
-      );
-    }
-
-    if (selectedMonth != null) {
-      parts.add(
-        TextSpan(
-          text: DateUtil.getLocalizedMonthName(context, selectedMonth!),
-          style: TextStyle(color: currentDatePickerStep == DatePickerStep.month ? highlightColor : null),
-          recognizer: TapGestureRecognizer()
-            ..onTap = () {
-              if (selectedYear != null) {
-                _controller.jumpToPage(DatePickerStep.month.pageIndex);
-              }
-            },
-        ),
-      );
-    }
-
-    if (selectedYear != null) {
-      parts.add(
-        TextSpan(
-          text: '$selectedYear',
-          style: TextStyle(color: currentDatePickerStep == DatePickerStep.year ? highlightColor : null),
-          recognizer: TapGestureRecognizer()
-            ..onTap = () {
-              _controller.jumpToPage(DatePickerStep.year.pageIndex);
-            },
-        ),
-      );
-    }
-
-    // No parts were added, nothing is selected
-    if (parts.isEmpty) {
-      return [TextSpan(text: l10n.select_a_date)];
-    }
-
-    final List<TextSpan> finalSpans = [];
-    for (int i = 0; i < parts.length; i++) {
-      finalSpans.add(parts[i]);
-      if (i < parts.length - 1) {
-        finalSpans.add(const TextSpan(text: ' '));
-      }
-    }
-
-    return finalSpans;
-  }
-
   @override
   Widget build(BuildContext context) {
+    final l10n = AppLocalizations.of(context)!;
+
     return PopScope(
       canPop: _history.length <= 1,
       onPopInvokedWithResult: (bool didPop, PartialDate? result) {
@@ -274,15 +205,26 @@ class _CustomDatePickerState extends State<CustomDatePicker> {
                     children: [
                       Align(
                         alignment: Alignment.center,
-                        child: SizedBox(
-                          width: double.infinity,
-                          child: Text.rich(
-                            TextSpan(
-                              style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
-                              children: _buildFormattedDateSpans(),
-                            ),
-                            textAlign: TextAlign.center,
-                          ),
+                        child: InteractiveDateDisplay(
+                          year: selectedYear,
+                          month: selectedMonth,
+                          day: selectedDay,
+                          placeholderText: currentDatePickerStep == DatePickerStep.info ? l10n.info_label : l10n.select_a_date,
+                          baseStyle: const TextStyle(fontWeight: FontWeight.w600, fontSize: 26),
+                          dayStyle: TextStyle(color: currentDatePickerStep == DatePickerStep.day ? Theme.of(context).colorScheme.primary : null),
+                          monthStyle: TextStyle(color: currentDatePickerStep == DatePickerStep.month ? Theme.of(context).colorScheme.primary : null),
+                          yearStyle: TextStyle(color: currentDatePickerStep == DatePickerStep.year ? Theme.of(context).colorScheme.primary : null),
+                          onDayTap: () {
+                            if (selectedYear != null && selectedMonth != null) {
+                              _controller.jumpToPage(DatePickerStep.day.pageIndex);
+                            }
+                          },
+                          onMonthTap: () {
+                            if (selectedYear != null) {
+                              _controller.jumpToPage(DatePickerStep.month.pageIndex);
+                            }
+                          },
+                          onYearTap: () => _controller.jumpToPage(DatePickerStep.year.pageIndex),
                         ),
                       ),
 

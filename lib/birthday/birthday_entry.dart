@@ -34,16 +34,16 @@ class BirthdayEntryTile extends StatelessWidget {
     final int month = entry.month ?? 1;
     final int day = entry.day ?? 1;
 
-    final birthdayDate = DateTime(year ?? now.year, month, day);
+    final birthdayDate = DateTime(year ?? 2000, month, day);
 
     final daysUntil = DateUtil.daysUntilDate(now, birthdayDate);
     final nextBirthdayDate = now.add(Duration(days: daysUntil));
 
     final locale = Localizations.localeOf(context).toString();
     final weekdayName = DateFormat.EEEE(locale).format(nextBirthdayDate);
-    final monthName = DateUtil.getLocalizedMonthName(context, month);
 
-    final birthdayString = year != null ? "$day $monthName $year" : "$day $monthName";
+    final formatter = DateFormat(year != null ? "yMMMMd" : "MMMMd", locale);
+    final String birthdayString = formatter.format(birthdayDate);
 
     return Card(
       color: isSelected ? theme.colorScheme.primaryContainer : null,

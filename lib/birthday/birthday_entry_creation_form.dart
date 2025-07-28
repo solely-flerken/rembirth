@@ -1,17 +1,16 @@
 import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
-import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/util/logger.dart';
 
+import '../datepicker/date_display.dart';
 import '../datepicker/date_picker.dart';
 import '../datepicker/util.dart';
 import '../l10n/app_localizations.dart';
 import '../model/birthday_entry.dart';
 import '../datepicker/partial_date.dart';
-import '../util/date_util.dart';
 
 class BirthdayEntryCreationForm extends StatefulWidget {
   final BirthdayEntry? initialEntry;
@@ -115,37 +114,6 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
     }
   }
 
-  List<TextSpan> _buildFormattedDateSpans() {
-    final l10n = AppLocalizations.of(context)!;
-
-    if (_selectedDate == null) {
-      return [TextSpan(text: l10n.select_a_date)];
-    }
-
-    final selectedDay = _selectedDate!.day;
-    final monthName = DateUtil.getLocalizedMonthName(context, _selectedDate!.month);
-    final selectedYear = _selectedDate!.year;
-
-    return [
-      TextSpan(
-        text: '$selectedDay ',
-        recognizer: TapGestureRecognizer()
-          ..onTap = () => _openDatePicker(context, DatePickerStep.day, DatePickerStep.day, _selectedDate),
-      ),
-      TextSpan(
-        text: '$monthName ',
-        style: TextStyle(color: Theme.of(context).colorScheme.primary),
-        recognizer: TapGestureRecognizer()
-          ..onTap = () => _openDatePicker(context, DatePickerStep.month, DatePickerStep.month, _selectedDate),
-      ),
-      TextSpan(
-        text: selectedYear != null ? '$selectedYear' : '',
-        recognizer: TapGestureRecognizer()
-          ..onTap = () => _openDatePicker(context, DatePickerStep.year, DatePickerStep.year, _selectedDate),
-      ),
-    ];
-  }
-
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -242,11 +210,16 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Expanded(
-                        child: Text.rich(
-                          TextSpan(
-                            style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
-                            children: _buildFormattedDateSpans(),
-                          ),
+                        child: InteractiveDateDisplay(
+                          year: _selectedDate?.year,
+                          month: _selectedDate?.month,
+                          day: _selectedDate?.day,
+                          placeholderText: l10n.select_a_date,
+                          baseStyle: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
+                          monthStyle: TextStyle(color: theme.colorScheme.primary),
+                          onDayTap: () => _openDatePicker(context, DatePickerStep.day, DatePickerStep.day, _selectedDate),
+                          onMonthTap: () => _openDatePicker(context, DatePickerStep.month, DatePickerStep.month, _selectedDate),
+                          onYearTap: () => _openDatePicker(context, DatePickerStep.year, DatePickerStep.year, _selectedDate),
                         ),
                       ),
                       const Icon(Icons.calendar_today),
