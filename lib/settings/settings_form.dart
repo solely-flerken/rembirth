@@ -213,9 +213,12 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           const Divider(),
           ListTile(
             title: Text(_l10n.settings_language_label),
-            subtitle: Text(
-              LocaleUtil.getLanguageNativeName(_l10n.localeName),
-            ),
+            subtitle: settingsController.settings.isUsingSystemLocaleFallback
+                ? Text(
+                    "System language not supported. Using ${LocaleUtil.getLanguageNativeName(settingsController.settings.locale.toString())} as a fallback.",
+                    style: TextStyle(color: Theme.of(context).colorScheme.tertiary),
+                  )
+                : Text(LocaleUtil.getLanguageNativeName(_l10n.localeName)),
             trailing: const Icon(Icons.language, size: 32),
             onTap: _showLocaleSelectionDialog,
           ),

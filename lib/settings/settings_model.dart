@@ -60,6 +60,18 @@ class Settings {
     return languageOnlyMatch;
   }
 
+  /// Returns true if the app is set to follow an unsupported system locale
+  bool get isUsingSystemLocaleFallback {
+    if (localeCode != null) {
+      return false;
+    }
+
+    final systemLocale = WidgetsBinding.instance.platformDispatcher.locale;
+    final effectiveLocale = locale;
+
+    return systemLocale.languageCode != effectiveLocale.languageCode;
+  }
+
   ThemeMode get themeMode {
     switch (theme) {
       case ThemeSetting.light:
