@@ -62,7 +62,7 @@ class InteractiveDateDisplay extends StatelessWidget {
 
     final spans = <TextSpan>[];
     int cursor = 0;
-    final matches = RegExp(r'[dMy]+').allMatches(pattern);
+    final matches = RegExp(r'[dMyL]+').allMatches(pattern);
 
     for (final match in matches) {
       if (match.start > cursor) {
@@ -74,19 +74,19 @@ class InteractiveDateDisplay extends StatelessWidget {
       /// Only add spans for date parts that were originally provided
       if (subPattern.contains('d') && day != null) {
         spans.add(TextSpan(
-          text: DateFormat(subPattern, locale).format(dateTime),
+          text: DateFormat.d(locale).format(dateTime),
           style: dayStyle,
           recognizer: dayRecognizer,
         ));
-      } else if (subPattern.contains('M') && month != null) {
+      } else if ((subPattern.contains('M') || subPattern.contains('L')) && month != null) {
         spans.add(TextSpan(
-          text: DateFormat(subPattern, locale).format(dateTime),
+          text: DateFormat.MMMM(locale).format(dateTime),
           style: monthStyle,
           recognizer: monthRecognizer,
         ));
       } else if (subPattern.contains('y') && year != null) {
         spans.add(TextSpan(
-          text: DateFormat(subPattern, locale).format(dateTime),
+          text: DateFormat.y(locale).format(dateTime),
           style: yearStyle,
           recognizer: yearRecognizer,
         ));
