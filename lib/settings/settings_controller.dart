@@ -36,6 +36,12 @@ class SettingsController extends ChangeNotifier {
     await _saveAndNotify();
   }
 
+  Future<void> setCategoryViewEnabled(bool enable) async {
+    if(_settings.categoryViewEnabled == enable) return;
+    _settings.categoryViewEnabled = enable;
+    await _saveAndNotify();
+  }
+
   Future<void> setPositionToolbarBottom(bool pushToBottom) async {
     if (_settings.positionToolbarBottom == pushToBottom) return;
     _settings.positionToolbarBottom = pushToBottom;
@@ -85,6 +91,7 @@ class SettingsController extends ChangeNotifier {
     _settings.notificationsEnabled = defaultSettings.notificationsEnabled;
     _settings.notificationTimeHour = defaultSettings.notificationTimeHour;
     _settings.notificationTimeMinute = defaultSettings.notificationTimeMinute;
+    _settings.categoryViewEnabled = defaultSettings.categoryViewEnabled;
 
     if (_settings.notificationsEnabled && shouldRescheduleNotifications) {
       logger.i("Restoring defaults: Notifications are enabled, rescheduling...");

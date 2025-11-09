@@ -17,6 +17,7 @@ class SettingsService {
       notificationTimeHour: prefs.getInt(kNotificationHourKey) ?? defaultSettings.notificationTime.hour,
       notificationTimeMinute: prefs.getInt(kNotificationMinuteKey) ?? defaultSettings.notificationTime.minute,
       localeCode: prefs.getString(kLocaleCode) ?? defaultSettings.localeCode,
+      categoryViewEnabled: prefs.getBool(kCategoryViewEnabled) ?? defaultSettings.categoryViewEnabled,
     );
   }
 
@@ -28,6 +29,7 @@ class SettingsService {
     await prefs.setBool(kNotificationsEnabledKey, settings.notificationsEnabled);
     await prefs.setInt(kNotificationHourKey, settings.notificationTimeHour);
     await prefs.setInt(kNotificationMinuteKey, settings.notificationTimeMinute);
+    await prefs.setBool(kCategoryViewEnabled, settings.categoryViewEnabled);
 
     if (settings.localeCode != null) {
       await prefs.setString(kLocaleCode, settings.localeCode!);

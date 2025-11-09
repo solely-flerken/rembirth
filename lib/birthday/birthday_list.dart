@@ -34,7 +34,6 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   // UI
   final Map<int, bool> _expandedStates = {};
-  bool _isCategoryView = true;
 
   final today = DateTime.now();
 
@@ -118,10 +117,9 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     });
   }
 
-  void _toggleCategoryView() {
-    setState(() {
-      _isCategoryView = !_isCategoryView;
-    });
+  void _toggleCategoryView() async {
+    final isCategoryView = !context.read<SettingsController>().settings.categoryViewEnabled;
+    await context.read<SettingsController>().setCategoryViewEnabled(isCategoryView);
   }
 
   //#endregion
@@ -298,7 +296,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     final listContent = Expanded(
       child: RefreshIndicator(
         onRefresh: _handleRefresh,
-        child: _isCategoryView ? _builtCategoryList(categoryKeys, groupedEntries) : _buildFlatList(flatList),
+        child: settingsController.settings.categoryViewEnabled ? _builtCategoryList(categoryKeys, groupedEntries) : _buildFlatList(flatList),
       ),
     );
 
@@ -399,9 +397,10 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     final l10n = AppLocalizations.of(context)!;
     final settingsController = context.watch<SettingsController>();
 
+    final isCategoryView = settingsController.settings.categoryViewEnabled;
     final isToolbarBottom = settingsController.settings.positionToolbarBottom;
     final bool isEntrySelected = _selectedEntryId != null;
-    final bool canExpandCollapse = _isCategoryView && categoryIds.isNotEmpty;
+    final bool canExpandCollapse = isCategoryView && categoryIds.isNotEmpty;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
@@ -445,11 +444,11 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
                         padding: const EdgeInsets.symmetric(horizontal: 8.0),
                         child: ListTile(
                           leading: Icon(
-                            _isCategoryView ? Icons.view_list : Icons.grid_view,
+                            isCategoryView ? Icons.view_list : Icons.grid_view,
                             size: 24,
                             color: Theme.of(context).colorScheme.primary,
                           ),
-                          title: Text(_isCategoryView ? l10n.list_show_as_list : l10n.list_show_as_categories),
+                          title: Text(isCategoryView ? l10n.list_show_as_list : l10n.list_show_as_categories),
                         ),
                       ),
                     ),

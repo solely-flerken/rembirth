@@ -11,6 +11,7 @@ class Settings {
   int notificationTimeHour;
   int notificationTimeMinute;
   String? localeCode;
+  bool categoryViewEnabled;
 
   Settings({
     required this.theme,
@@ -19,6 +20,7 @@ class Settings {
     required this.notificationTimeHour,
     required this.notificationTimeMinute,
     required this.localeCode,
+    required this.categoryViewEnabled
   });
 
   factory Settings.defaults() {
@@ -29,6 +31,7 @@ class Settings {
       notificationTimeHour: 9,
       notificationTimeMinute: 0,
       localeCode: null,
+      categoryViewEnabled: true
     );
   }
 
