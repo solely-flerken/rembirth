@@ -8,3 +8,15 @@ Since this app uses Isar v4 for data persistence, you’ll need to run the follo
 ```sh
   dart run build_runner build
 ```
+
+```sh
+  flutter gen-l10n
+```
+
+```sh
+  flutter build apk --release    
+```
+
+```sh
+  adb install -r .\build\app\outputs\flutter-apk\app-release.apk        
+```
