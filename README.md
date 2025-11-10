@@ -20,3 +20,15 @@ Since this app uses Isar v4 for data persistence, you’ll need to run the follo
 ```sh
   adb install -r .\build\app\outputs\flutter-apk\app-release.apk        
 ```
+
+## Debug
+
+Get shared preferences.
+```sh
+  adb shell "run-as com.example.rembirth cat shared_prefs/FlutterSharedPreferences.xml"
+```
+
+Get all scheduled notifications for the app.
+```sh
+  adb shell dumpsys alarm | grep com.example.rembirth
+```
