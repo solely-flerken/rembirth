@@ -60,6 +60,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   Future<void> _promptForBackgroundPermission() async {
     await WidgetsBinding.instance.endOfFrame;
 
+    // TODO: Maybe add this to settings (so restoring defaults would also lead to this dialog to be enabled again)
     final prefs = await SharedPreferences.getInstance();
     const String backgroundPromptKey = 'background_task_prompt';
     final bool alreadyPrompted = prefs.getBool(backgroundPromptKey) ?? false;
