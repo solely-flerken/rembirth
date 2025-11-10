@@ -126,6 +126,12 @@
     }
   },
 
+  "@_BIRTHDAY_ENTRY_LIST_PERMISSIONS": {},
+  "backgroundPermissionDialogTitle": "Enable Reliable Reminders",
+  "backgroundPermissionDialogContent": "To ensure your birthday reminders work reliably, please find and enable 'Auto-Start' or disable battery restrictions for this app in the next screen.",
+  "backgroundPermissionDialogLater": "Later",
+  "backgroundPermissionDialogSettings": "Go To Settings",
+
   "@_BIRTHDAY_ENTRY_CREATION": {},
 
   "entry_creation_label": "Create Birthday Entry",

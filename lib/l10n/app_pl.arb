@@ -126,6 +126,12 @@
     }
   },
 
+  "@_BIRTHDAY_ENTRY_LIST_PERMISSIONS": {},
+  "backgroundPermissionDialogTitle": "Włącz Niezawodne Przypomnienia",
+  "backgroundPermissionDialogContent": "Aby zapewnić niezawodne działanie przypomnień o urodzinach, znajdź i włącz 'Autostart' lub wyłącz ograniczenia baterii dla tej aplikacji na następnym ekranie.",
+  "backgroundPermissionDialogLater": "Później",
+  "backgroundPermissionDialogSettings": "Otwórz ustawienia",
+
   "@_BIRTHDAY_ENTRY_CREATION": {},
 
   "entry_creation_label": "Dodaj urodziny",

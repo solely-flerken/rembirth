@@ -126,6 +126,12 @@
     }
   },
 
+  "@_BIRTHDAY_ENTRY_LIST_PERMISSIONS": {},
+  "backgroundPermissionDialogTitle": "Zuverlässige Erinnerungen aktivieren",
+  "backgroundPermissionDialogContent": "Um sicherzustellen, dass Erinnerungen zuverlässig funktionieren, suche und aktiviere bitte 'Auto-Start' oder deaktiviere die Akku-Optimierung für diese App auf dem nächsten Bildschirm.",
+  "backgroundPermissionDialogLater": "Später",
+  "backgroundPermissionDialogSettings": "Einstellungen öffnen",
+
   "@_BIRTHDAY_ENTRY_CREATION": {},
 
   "entry_creation_label": "Geburtstagseintrag erstellen",
