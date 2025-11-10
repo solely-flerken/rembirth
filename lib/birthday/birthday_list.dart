@@ -1,5 +1,6 @@
 import 'package:collection/collection.dart';
 import 'package:flutter/material.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:provider/provider.dart';
 import 'package:rembirth/l10n/app_localizations.dart';
 import 'package:rembirth/model/birthday_entry.dart';
@@ -7,6 +8,7 @@ import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/notifications/notification_service.dart';
 import 'package:rembirth/save/save_manager.dart';
 import 'package:rembirth/settings/settings_form.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 import '../settings/settings_controller.dart';
 import '../util/date_util.dart';
@@ -49,7 +51,49 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     _entryManager = context.read<SaveManager<BirthdayEntry>>();
     _categoryManager = context.read<SaveManager<BirthdayEntryCategory>>();
     _notificationService = context.read<NotificationService>();
+
+    _promptForBackgroundPermission();
   }
+
+  //#region Permissions
+
+  Future<void> _promptForBackgroundPermission() async {
+    await WidgetsBinding.instance.endOfFrame;
+
+    final prefs = await SharedPreferences.getInstance();
+    const String backgroundPromptKey = 'background_task_prompt';
+    final bool alreadyPrompted = prefs.getBool(backgroundPromptKey) ?? false;
+
+    if (alreadyPrompted) {
+      return;
+    }
+
+    if(!mounted) return;
+
+    final l10n = AppLocalizations.of(context)!;
+
+    await showDialog(
+      context: context,
+      builder: (context) =>
+          AlertDialog(
+            title: Text(l10n.backgroundPermissionDialogTitle),
+            content: Text(l10n.backgroundPermissionDialogContent),
+            actions: [
+              TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.backgroundPermissionDialogLater)),
+              TextButton(
+                onPressed: () async {
+                  openAppSettings();
+                  Navigator.of(context).pop();
+                  await prefs.setBool(backgroundPromptKey, true);
+                },
+                child: Text(l10n.backgroundPermissionDialogSettings),
+              ),
+            ],
+          ),
+    );
+  }
+
+  //#endregion
 
   //#region Data
 
