@@ -1,16 +1,16 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:path_provider/path_provider.dart';
 
 class IsarDatabase {
   static Isar? _instance;
 
-  static Future<void> open(List<IsarGeneratedSchema> schemas) async {
+  static Future<void> open(List<CollectionSchema> schemas) async {
     if (_instance != null) return;
 
     final dir = await getApplicationDocumentsDirectory();
 
-    _instance = await Isar.openAsync(
-      schemas: schemas,
+    _instance = await Isar.open(
+      schemas,
       directory: dir.path,
       inspector: true,
       name: 'rembirth_db'

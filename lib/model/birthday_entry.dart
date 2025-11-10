@@ -1,4 +1,4 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 import 'package:rembirth/model/syncable_item.dart';
 
 part 'birthday_entry.g.dart';
@@ -6,7 +6,7 @@ part 'birthday_entry.g.dart';
 @collection
 class BirthdayEntry extends SyncableItem {
   @override
-  int id = 0;
+  Id id = Isar.autoIncrement;
 
   String? name;
   int? year;

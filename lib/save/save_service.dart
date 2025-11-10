@@ -1,5 +1,5 @@
 abstract class SaveService<T> {
-  Future<void> save(T item);
+  Future<int> save(T item);
 
   Future<T?> load(dynamic id);
 

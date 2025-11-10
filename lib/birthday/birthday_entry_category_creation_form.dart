@@ -4,7 +4,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter_colorpicker/flutter_colorpicker.dart';
 import 'package:rembirth/l10n/app_localizations.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
-import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/util/logger.dart';
 
 class BirthdayEntryCategoryCreationForm extends StatefulWidget {
@@ -51,12 +50,14 @@ class _BirthdayEntryCategoryCreationFormState extends State<BirthdayEntryCategor
     logger.d('Category creation form: Passed validation.');
 
     int? id = widget.initialCategory?.id;
-    id ??= IsarDatabase.instance.birthdayEntryCategorys.autoIncrement();
 
     final newEntry = BirthdayEntryCategory()
-      ..id = id
       ..name = name
       ..colorValue = _selectedColor.toARGB32();
+
+    if(id != null){
+      newEntry.id = id;
+    }
 
     Navigator.of(context).pop(newEntry);
   }

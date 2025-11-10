@@ -20,7 +20,7 @@ class RemoteSaveService<T> implements SaveService {
   }
 
   @override
-  Future<void> save(item) {
+  Future<int> save(item) {
     // TODO: implement save
     throw UnimplementedError();
   }

@@ -17,21 +17,23 @@ class SaveManager<T extends SyncableItem> {
     logger.d('SaveManager<$T>: Initialized with mode: ${saveMode.name}');
   }
 
-  Future<void> save(T item) async {
+  Future<int?> save(T item) async {
     item.updatedAt = DateTime.now();
     logger.d('SaveManager: Saving item of type ${item.runtimeType} with ID ${item.id} (mode: ${saveMode.name})');
 
     if (saveMode == SaveMode.local) {
       // Save to local
-      await localService.save(item);
+      return await localService.save(item);
     } else if (saveMode == SaveMode.remote) {
       // Save to local and remote
       await localService.save(item);
 
       if (remoteService != null) {
-        await remoteService!.save(item);
+        return await remoteService!.save(item);
       }
     }
+
+    return null;
   }
 
   Future<T?> load(dynamic id) async {

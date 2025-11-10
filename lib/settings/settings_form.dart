@@ -53,6 +53,9 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
     if (newCategory == null) return;
 
+    final newCategoryId = await _categoryManager.save(newCategory);
+    newCategory.id = newCategoryId!;
+
     setState(() {
       final index = _categories.indexWhere((e) => e.id == newCategory.id);
       if (index != -1) {
@@ -61,8 +64,6 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
         _categories.add(newCategory);
       }
     });
-
-    await _categoryManager.save(newCategory);
 
     final statusMessage = category == null
         ? _l10n.settings_categories_status_added

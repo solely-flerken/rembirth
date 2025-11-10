@@ -137,12 +137,14 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     if (returnedEntry == null) return;
 
+    final newEntryId = await _entryManager.save(returnedEntry);
+    returnedEntry.id = newEntryId!;
+
     setState(() {
       _entries.add(returnedEntry);
       _selectedEntryId = returnedEntry.id;
     });
 
-    _entryManager.save(returnedEntry);
 
     if (!mounted) return;
 
@@ -165,6 +167,9 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     if (returnedEntry == null) return;
 
+    final newEntryId = await _entryManager.save(returnedEntry);
+    returnedEntry.id = newEntryId!;
+
     setState(() {
       final index = _entries.indexWhere((e) => e.id == returnedEntry.id);
       if (index != -1) {
@@ -172,8 +177,6 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       }
       _selectedEntryId = returnedEntry.id;
     });
-
-    _entryManager.save(returnedEntry);
 
     if (!mounted) return;
 

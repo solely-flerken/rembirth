@@ -3,6 +3,8 @@ description: "A minimalistic app to help you remember your friends' birthdays."
 publish_to: 'none'
 version: 1.1.0+1
 
+isar_version: &isar_version 3.3.0-dev.3
+
 environment:
   sdk: ^3.8.0
 
@@ -18,12 +20,8 @@ dependencies:
     sdk: flutter
   flutter_timezone: ^4.1.1
   intl: ^0.20.2
-  isar:
-    hosted: https://pub.isar-community.dev
-    version: 4.0.3
-  isar_flutter_libs:
-    hosted: https://pub.isar-community.dev
-    version: 4.0.3
+  isar_community: *isar_version
+  isar_community_flutter_libs: *isar_version
   logger: ^2.5.0
   path_provider: ^2.1.5
   provider: ^6.1.5
@@ -35,6 +33,8 @@ dev_dependencies:
     sdk: flutter
   flutter_lints: ^6.0.0
   build_runner: any
+  isar_community_generator: *isar_version
+  analyzer: 8.3.0
 
 flutter:
   generate: true

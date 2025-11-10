@@ -2,7 +2,6 @@ import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
-import 'package:rembirth/save/isar_database.dart';
 import 'package:rembirth/util/logger.dart';
 
 import '../datepicker/date_display.dart';
@@ -77,15 +76,17 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
     logger.d('Creation form: Passed validation.');
 
     int? id = widget.initialEntry?.id;
-    id ??= IsarDatabase.instance.birthdayEntrys.autoIncrement();
 
     final newEntry = BirthdayEntry()
-      ..id = id
       ..name = _name
       ..categoryId = _category?.id
       ..year = _selectedDate?.year
       ..month = _selectedDate?.month
       ..day = _selectedDate?.day;
+
+    if(id != null){
+      newEntry.id = id;
+    }
 
     Navigator.of(context).pop(newEntry);
   }

@@ -1,8 +1,9 @@
-import 'package:isar/isar.dart';
+import 'package:isar_community/isar.dart';
 
 abstract class SyncableItem {
-  int get id;
-  set id(int value);
+  Id get id;
+
+  set id(Id value);
 
   @Index()
   DateTime createdAt = DateTime.now();
