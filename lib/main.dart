@@ -11,12 +11,49 @@ import 'package:rembirth/settings/settings_controller.dart';
 import 'package:rembirth/settings/settings_model.dart';
 import 'package:rembirth/settings/settings_service.dart';
 import 'package:rembirth/util/logger.dart';
+import 'package:workmanager/workmanager.dart';
 
 import 'birthday/birthday_list.dart';
 import 'notifications/notification_service.dart';
 
+const rescheduleTask = "rescheduleNotificationsTask";
+
+@pragma('vm:entry-point')
+void callbackDispatcher() {
+  Workmanager().executeTask((task, inputData) async {
+    if (task == rescheduleTask) {
+      await IsarDatabase.open([BirthdayEntrySchema, BirthdayEntryCategorySchema]);
+      final birthdayEntryService = IsarSaveService<BirthdayEntry>();
+      final saveManagerBirthdayEntry = SaveManager(localService: birthdayEntryService, saveMode: SaveMode.local);
+      final notificationService = NotificationService();
+
+      // Initialize notifications
+      await notificationService.init();
+
+      // Load birthdays and reschedule
+      final allBirthdays = await saveManagerBirthdayEntry.loadAll();
+      await notificationService.setupScheduledNotificationsFromPrefs(allBirthdays);
+    }
+    return Future.value(true);
+  });
+}
+
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+
+  // Initialize Workmanager and register the task
+  await Workmanager().initialize(callbackDispatcher);
+
+  // Register the task to run periodically
+  Workmanager().registerPeriodicTask(
+    "1",
+    rescheduleTask,
+    frequency: const Duration(days: 1),
+    constraints: Constraints(
+      networkType: NetworkType.notRequired,
+      requiresCharging: false,
+    ),
+  );
 
   // Initialize database
   await IsarDatabase.open([BirthdayEntrySchema, BirthdayEntryCategorySchema]);
