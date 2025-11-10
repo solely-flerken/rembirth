@@ -18,7 +18,6 @@ class SettingsPageWidget extends StatefulWidget {
 
 class _SettingsPageWidgetState extends State<SettingsPageWidget> {
   late final SaveManager<BirthdayEntryCategory> _categoryManager;
-  List<BirthdayEntryCategory> _categories = [];
 
   AppLocalizations get _l10n => AppLocalizations.of(context)!;
 
@@ -53,17 +52,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
     if (newCategory == null) return;
 
-    final newCategoryId = await _categoryManager.save(newCategory);
-    newCategory.id = newCategoryId!;
-
-    setState(() {
-      final index = _categories.indexWhere((e) => e.id == newCategory.id);
-      if (index != -1) {
-        _categories[index] = newCategory;
-      } else {
-        _categories.add(newCategory);
-      }
-    });
+    await _categoryManager.save(newCategory);
 
     final statusMessage = category == null
         ? _l10n.settings_categories_status_added
@@ -72,10 +61,6 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
   }
 
   Future<void> _handleCategoryDelete(BirthdayEntryCategory category) async {
-    setState(() {
-      _categories.removeWhere((e) => e.id == category.id);
-    });
-
     await _categoryManager.delete(category.id);
   }
 
@@ -284,9 +269,9 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 );
               }
 
-              _categories = snapshot.data ?? _categories;
+              final currentCategories = snapshot.data ?? [];
 
-              if (_categories.isEmpty) {
+              if (currentCategories.isEmpty) {
                 return ListTile(
                   title: Text(_l10n.settings_categories_no_categories),
                   subtitle: Text(_l10n.settings_categories_instructions),
@@ -297,7 +282,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 subtitle: Wrap(
                   spacing: 8.0,
                   runSpacing: 4.0,
-                  children: _categories.map((category) {
+                  children: currentCategories.map((category) {
                     final categoryColor = category.color ?? Colors.grey.shade400;
                     final textColor = ThemeData.estimateBrightnessForColor(categoryColor) == Brightness.dark
                         ? Colors.white
