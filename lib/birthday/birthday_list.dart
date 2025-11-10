@@ -277,7 +277,12 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       child: Column(
         children: [
           _builtActionBar(const []),
-          Expanded(child: Center(child: Text(l10n.list_no_entries_found))),
+          Expanded(
+            child: Padding(
+              padding: const EdgeInsets.all(24.0),
+              child: Center(child: Text(l10n.list_no_entries_found, textAlign: TextAlign.center)),
+            ),
+          ),
         ],
       ),
     );
