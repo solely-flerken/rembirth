@@ -280,8 +280,13 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   Widget build(BuildContext context) {
     final settingsController = context.watch<SettingsController>();
 
+    final allCategoryIds = [
+      ..._categories.map((c) => c.id),
+      if (_entries.any((e) => e.categoryId == null)) _generalCategory.id,
+    ];
+
     final toolbar = ActionBar(
-      categoryIds: _categories.map((c) => c.id),
+      categoryIds: allCategoryIds, // TODO: Refactor maybe
       isEntrySelected: _selectedEntryId != null,
       onAdd: _addEntry,
       onEdit: _selectedEntryId != null ? _editEntry : null,
