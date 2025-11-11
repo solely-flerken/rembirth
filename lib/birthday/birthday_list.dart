@@ -12,6 +12,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import '../settings/settings_controller.dart';
 import '../util/date_util.dart';
+import 'action_bar.dart';
 import 'birthday_entry.dart';
 import 'birthday_entry_category_creation_form.dart';
 import 'birthday_entry_creation_form.dart';
@@ -36,8 +37,6 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   // UI
   final Map<int, bool> _expandedStates = {};
-
-  final today = DateTime.now();
 
   /// A virtual category used for entries that don't have a category assigned
   static final _generalCategory = BirthdayEntryCategory()
@@ -113,7 +112,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     }
 
     for (final category in grouped.keys) {
-      grouped[category]!.sort((a, b) => _compareByDaysUntilBirthday(a, b, today));
+      grouped[category]!.sort((a, b) => _compareByDaysUntilBirthday(a, b, DateTime.now()));
     }
 
     return grouped;
@@ -126,7 +125,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   List<BirthdayEntry> _getSortedFlatList() {
     return _entries.where((entry) => entry.month != null && entry.day != null).toList()
-      ..sort((a, b) => _compareByDaysUntilBirthday(a, b, today));
+      ..sort((a, b) => _compareByDaysUntilBirthday(a, b, DateTime.now()));
   }
 
   static int _compareByDaysUntilBirthday(BirthdayEntry a, BirthdayEntry b, DateTime today) {
@@ -279,6 +278,30 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
   @override
   Widget build(BuildContext context) {
+    final settingsController = context.watch<SettingsController>();
+
+    final toolbar = ActionBar(
+      categoryIds: _categories.map((c) => c.id),
+      isEntrySelected: _selectedEntryId != null,
+      onAdd: _addEntry,
+      onEdit: _selectedEntryId != null ? _editEntry : null,
+      onDelete: _selectedEntryId != null ? _deleteItem : null,
+      onExpandAll: _expandAll,
+      onCollapseAll: _collapseAll,
+      onOpenSettings: _openSettings,
+      onToggleCategoryView: _toggleCategoryView,
+    );
+
+    final listContent = Expanded(child: _buildContentArea());
+
+    final contentWidgets = settingsController.settings.positionToolbarBottom
+        ? [listContent, toolbar]
+        : [toolbar, listContent];
+
+    return SafeArea(child: Column(children: contentWidgets,),);
+  }
+
+  Widget _buildContentArea() {
     return StreamBuilder<List<BirthdayEntryCategory>>(
       stream: _categoryManager.watchAll(),
       builder: (context, categorySnapshot) {
@@ -308,7 +331,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
             }
 
             final groupedEntries = _groupEntries(_entries, _categories);
-            return _builtContent(groupedEntries);
+            return _buildListContent(groupedEntries);
           },
         );
       },
@@ -318,46 +341,30 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   Widget _buildEmptyState() {
     final l10n = AppLocalizations.of(context)!;
 
-    return SafeArea(
-      child: Column(
-        children: [
-          _builtActionBar(const []),
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(24.0),
-              child: Center(child: Text(l10n.list_no_entries_found, textAlign: TextAlign.center)),
-            ),
-          ),
-        ],
+    return Padding(
+      padding: const EdgeInsets.all(24.0),
+      child: Center(
+        child: Text(l10n.list_no_entries_found, textAlign: TextAlign.center),
       ),
     );
   }
 
-  Widget _builtContent(Map<BirthdayEntryCategory, List<BirthdayEntry>> groupedEntries) {
+  Widget _buildListContent(Map<BirthdayEntryCategory, List<BirthdayEntry>> groupedEntries) {
     final settingsController = context.watch<SettingsController>();
-
     final categoryKeys = groupedEntries.keys.toList()..sort((a, b) => a.name!.compareTo(b.name!));
-    final flatList = _getSortedFlatList();
 
     for (var key in categoryKeys) {
       _expandedStates.putIfAbsent(key.id, () => false);
     }
 
-    final categoryIds = categoryKeys.map((c) => c.id);
-    final toolbar = _builtActionBar(categoryIds);
+    final flatList = _getSortedFlatList();
 
-    final listContent = Expanded(
-      child: RefreshIndicator(
-        onRefresh: _handleRefresh,
-        child: settingsController.settings.categoryViewEnabled ? _builtCategoryList(categoryKeys, groupedEntries) : _buildFlatList(flatList),
-      ),
+    return RefreshIndicator(
+      onRefresh: _handleRefresh,
+      child: settingsController.settings.categoryViewEnabled
+          ? _builtCategoryList(categoryKeys, groupedEntries)
+          : _buildFlatList(flatList),
     );
-
-    final contentWidgets = settingsController.settings.positionToolbarBottom
-        ? [listContent, toolbar]
-        : [toolbar, listContent];
-
-    return SafeArea(child: Column(children: contentWidgets));
   }
 
   Widget _builtCategoryList(
@@ -443,123 +450,6 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
         final entry = entries[index];
         return BirthdayEntryTile(entry: entry, onTap: _handleEntryTap, isSelected: entry.id == _selectedEntryId);
       },
-    );
-  }
-
-  Widget _builtActionBar(Iterable<int> categoryIds) {
-    final l10n = AppLocalizations.of(context)!;
-    final settingsController = context.watch<SettingsController>();
-
-    final isCategoryView = settingsController.settings.categoryViewEnabled;
-    final isToolbarBottom = settingsController.settings.positionToolbarBottom;
-    final bool isEntrySelected = _selectedEntryId != null;
-    final bool canExpandCollapse = isCategoryView && categoryIds.isNotEmpty;
-
-    return Padding(
-      padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
-      child: SizedBox(
-        height: 56.0 + 16.0,
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.end,
-          children: [
-            // TODO: Remove this button. Only for testing
-            // _buildActionButton(
-            //   icon: Icons.notifications_active,
-            //   onPressed: () => isEntrySelected
-            //       ? NotificationService().scheduleBirthdayNotification(_entries[_selectedEntryId!], testMode: true)
-            //       : null,
-            // ),
-            const SizedBox(width: 8.0),
-            _buildActionButton(icon: Icons.add, onPressed: _addEntry),
-            const SizedBox(width: 8.0),
-            _buildActionButton(icon: Icons.edit, onPressed: isEntrySelected ? _editEntry : null),
-            const SizedBox(width: 8.0),
-            _buildActionButton(icon: Icons.delete, onPressed: isEntrySelected ? _deleteItem : null),
-
-            Spacer(),
-
-            Card(
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-              child: SizedBox(
-                width: 56.0,
-                height: 56.0,
-                child: PopupMenuButton<VoidCallback>(
-                  icon: Icon(Icons.more_horiz, size: 28.0, color: Theme.of(context).colorScheme.primary),
-                  // TODO: Wrong animation direction and weird value for positioning
-                  position: isToolbarBottom ? PopupMenuPosition.over : PopupMenuPosition.under,
-                  offset: isToolbarBottom ? Offset(0, -260) : const Offset(0, 12.0),
-                  onSelected: (callback) => callback(),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-                  itemBuilder: (context) => [
-                    PopupMenuItem(
-                      value: _toggleCategoryView,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ListTile(
-                          leading: Icon(
-                            isCategoryView ? Icons.view_list : Icons.grid_view,
-                            size: 24,
-                            color: Theme.of(context).colorScheme.primary,
-                          ),
-                          title: Text(isCategoryView ? l10n.list_show_as_list : l10n.list_show_as_categories),
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: () => _expandAll(categoryIds),
-                      enabled: canExpandCollapse,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ListTile(
-                          leading: Icon(Icons.unfold_more, size: 24, color: Theme.of(context).colorScheme.primary),
-                          title: Text(l10n.list_expand_all),
-                        ),
-                      ),
-                    ),
-                    PopupMenuItem(
-                      value: () => _collapseAll(categoryIds),
-                      enabled: canExpandCollapse,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ListTile(
-                          leading: Icon(Icons.unfold_less, size: 24, color: Theme.of(context).colorScheme.primary),
-                          title: Text(l10n.list_collapse_all),
-                        ),
-                      ),
-                    ),
-                    const PopupMenuDivider(indent: 8, endIndent: 8, thickness: 2),
-                    PopupMenuItem(
-                      value: _openSettings,
-                      child: Padding(
-                        padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                        child: ListTile(
-                          leading: Icon(Icons.settings, size: 24, color: Theme.of(context).colorScheme.primary),
-                          title: Text(l10n.list_settings),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ],
-        ),
-      ),
-    );
-  }
-
-  Widget _buildActionButton({required IconData icon, required VoidCallback? onPressed}) {
-    return SizedBox(
-      width: 56.0,
-      height: 56.0,
-      child: ElevatedButton(
-        onPressed: onPressed,
-        style: ElevatedButton.styleFrom(
-          padding: EdgeInsets.zero,
-          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8.0)),
-        ),
-        child: Icon(icon, size: 28.0),
-      ),
     );
   }
 }
