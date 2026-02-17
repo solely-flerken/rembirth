@@ -366,8 +366,24 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
             subtitle: const Text('Restore birthdays from a backup file'),
             trailing: const Icon(Icons.file_download_outlined, size: 32),
             onTap: () async {
-              // TODO: Implement Import Logic
-              showStatus('Import feature coming soon');
+              try {
+                final backupService = BackupService(
+                  entryManager: context.read<SaveManager<BirthdayEntry>>(),
+                  categoryManager: context.read<SaveManager<BirthdayEntryCategory>>(),
+                );
+
+                final success = await backupService.importData();
+
+                if (success) {
+                  showStatus("Import successful! Data restored.");
+                }
+              } catch (e) {
+                if (e is FormatException) {
+                  showStatus("Not a valid Rembirth backup file.");
+                } else {
+                  showStatus("Import failed: ${e.toString()}");
+                }
+              }
             },
           ),
 

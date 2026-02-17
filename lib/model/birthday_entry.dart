@@ -5,6 +5,8 @@ part 'birthday_entry.g.dart';
 
 @collection
 class BirthdayEntry extends SyncableItem {
+  BirthdayEntry();
+
   @override
   Id id = Isar.autoIncrement;
 
@@ -17,6 +19,29 @@ class BirthdayEntry extends SyncableItem {
   @Index()
   int? categoryId;
 
+  factory BirthdayEntry.fromJson(Map<String, dynamic> json) {
+    final entry = BirthdayEntry()
+      ..name = json['name'] as String?
+      ..year = json['year'] as int?
+      ..month = json['month'] as int?
+      ..day = json['day'] as int?
+      ..categoryId = json['categoryId'] as int?;
+
+    // Restore ID if present (Crucial for linking to categories)
+    if (json['id'] != null) {
+      entry.id = json['id'] as int;
+    }
+
+    // Restore SyncableItem fields
+    if (json['createdAt'] != null) {
+      entry.createdAt = DateTime.parse(json['createdAt'] as String);
+    }
+    if (json['updatedAt'] != null) {
+      entry.updatedAt = DateTime.parse(json['updatedAt'] as String);
+    }
+
+    return entry;
+  }
   Map<String, dynamic> toJson() {
     return {
       'id': id,

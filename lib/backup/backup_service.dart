@@ -96,4 +96,57 @@ class BackupService {
       rethrow;
     }
   }
+
+  Future<bool> importData() async {
+    try {
+      // Pick the file
+      final params = const OpenFileDialogParams(
+        dialogType: OpenFileDialogType.document,
+        sourceType: SourceType.photoLibrary,
+      );
+
+      final filePath = await FlutterFileDialog.pickFile(params: params);
+      if (filePath == null) return false;
+
+      logger.i('BackupService: Reading import file from $filePath');
+
+      final file = File(filePath);
+      final jsonString = await file.readAsString();
+
+      if (jsonString.isEmpty) throw const FormatException("File is empty");
+
+      final Map<String, dynamic> data = json.decode(jsonString);
+
+      // Validation
+      if (data['meta'] == null || data['meta']['appName'] != 'Rembirth') {
+        throw const FormatException('Invalid backup file. Missing metadata.');
+      }
+
+      logger.i('BackupService: Valid backup found. Starting import...');
+
+      // Restore Categories
+      if (data['categories'] != null) {
+        final List<dynamic> categoryList = data['categories'];
+        for (var categoryJson in categoryList) {
+          final category = BirthdayEntryCategory.fromJson(categoryJson);
+          await _categoryManager.save(category);
+        }
+      }
+
+      // Restore Entries
+      if (data['entries'] != null) {
+        final List<dynamic> entryList = data['entries'];
+        for (var entryJson in entryList) {
+          final entry = BirthdayEntry.fromJson(entryJson);
+          await _entryManager.save(entry);
+        }
+      }
+
+      logger.i('BackupService: Import completed successfully');
+      return true;
+    } catch (e, stack) {
+      logger.e('BackupService: Import failed', error: e, stackTrace: stack);
+      rethrow;
+    }
+  }
 }
