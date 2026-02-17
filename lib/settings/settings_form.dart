@@ -3,8 +3,10 @@ import 'package:provider/provider.dart';
 import 'package:rembirth/settings/settings_controller.dart';
 import 'package:rembirth/settings/themes.dart';
 
+import '../backup/backup_service.dart';
 import '../birthday/birthday_entry_category_creation_form.dart';
 import '../l10n/app_localizations.dart';
+import '../model/birthday_entry.dart';
 import '../model/birthday_entry_category.dart';
 import '../save/save_manager.dart';
 import '../util/locale_util.dart';
@@ -311,6 +313,61 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                   }).toList(),
                 ),
               );
+            },
+          ),
+
+          // --- Backup Section ---
+          const Divider(),
+          ListTile(
+            title: const Text('Export Data'), // TODO: Replace with _l10n.settings_export_label
+            subtitle: const Text('Save or share your birthdays'),
+            trailing: Row(
+              mainAxisSize: MainAxisSize.min,
+              crossAxisAlignment: CrossAxisAlignment.end,
+              children: [
+                InkResponse(
+                  radius: 24,
+                  onTap: () async {
+                    try {
+                      final backupService = BackupService(
+                        entryManager: context.read<SaveManager<BirthdayEntry>>(),
+                        categoryManager: context.read<SaveManager<BirthdayEntryCategory>>(),
+                      );
+
+                      await backupService.shareBackup();
+                    } catch (e) {
+                      showStatus("Share failed: ${e.toString()}"); // TODO: Remove error message
+                    }
+                  },
+                  child: const Icon(Icons.share_outlined, size: 32),
+                ),
+                const SizedBox(width: 24),
+                InkResponse(
+                  radius: 24,
+                  onTap: () async {
+                    try {
+                      final backupService = BackupService(
+                        entryManager: context.read<SaveManager<BirthdayEntry>>(),
+                        categoryManager: context.read<SaveManager<BirthdayEntryCategory>>(),
+                      );
+
+                      await backupService.saveBackupToDevice();
+                    } catch (e) {
+                      showStatus("Save failed: ${e.toString()}"); // TODO: Remove error message
+                    }
+                  },
+                  child: const Icon(Icons.file_upload_outlined, size: 32),
+                ),
+              ],
+            ),
+          ),
+          ListTile(
+            title: const Text('Import Data'), // TODO: Replace with _l10n.settings_import_label
+            subtitle: const Text('Restore birthdays from a backup file'),
+            trailing: const Icon(Icons.file_download_outlined, size: 32),
+            onTap: () async {
+              // TODO: Implement Import Logic
+              showStatus('Import feature coming soon');
             },
           ),
 

@@ -17,4 +17,14 @@ class BirthdayEntryCategory extends SyncableItem {
 
   @ignore
   Color? get color => colorValue != null ? Color(colorValue!) : null;
+
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'colorValue': colorValue,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
 }

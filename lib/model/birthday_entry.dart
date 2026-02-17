@@ -17,6 +17,19 @@ class BirthdayEntry extends SyncableItem {
   @Index()
   int? categoryId;
 
+  Map<String, dynamic> toJson() {
+    return {
+      'id': id,
+      'name': name,
+      'year': year,
+      'month': month,
+      'day': day,
+      'categoryId': categoryId,
+      'createdAt': createdAt.toIso8601String(),
+      'updatedAt': updatedAt.toIso8601String(),
+    };
+  }
+
   @override
   String toString() {
     return 'BirthdayEntry(id: ${id.toString()}, name: $name, date: $year-$month-$day)';
