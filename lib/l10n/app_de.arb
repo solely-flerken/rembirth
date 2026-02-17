@@ -160,5 +160,17 @@
   "info_selected_date": "Aktuell ausgewähltes Datum",
   "info_current_date": "Aktuelles Datum",
   "info_special_value": "Besonderer Wert",
-  "info_confirm": "Verstanden"
+  "info_confirm": "Verstanden",
+
+  "@_IMPORT_EXPORT_SETTINGS": {},
+  "settings_export_title": "Daten exportieren",
+  "settings_export_subtitle": "Geburtstage speichern oder teilen",
+  "settings_export_share_error": "Teilen des Backups fehlgeschlagen",
+  "settings_export_save_error": "Speichern des Backups fehlgeschlagen",
+
+  "settings_import_title": "Daten importieren",
+  "settings_import_subtitle": "Geburtstage aus einem Backup wiederherstellen",
+  "settings_import_success": "Import erfolgreich! Daten wiederhergestellt",
+  "settings_import_invalid_error": "Keine gültige Rembirth-Backup-Datei",
+  "settings_import_failed_error": "Wiederherstellen des Backups fehlgeschlagen"
 }

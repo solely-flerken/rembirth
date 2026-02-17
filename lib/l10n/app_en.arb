@@ -160,5 +160,17 @@
   "info_selected_date": "Currently selected date",
   "info_current_date": "Current date",
   "info_special_value": "Special value",
-  "info_confirm": "Understood"
+  "info_confirm": "Understood",
+
+  "@_IMPORT_EXPORT_SETTINGS": {},
+  "settings_export_title": "Export Data",
+  "settings_export_subtitle": "Save or share your birthdays",
+  "settings_export_share_error": "Sharing backup failed",
+  "settings_export_save_error": "Saving backup failed",
+
+  "settings_import_title": "Import Data",
+  "settings_import_subtitle": "Restore birthdays from a backup file",
+  "settings_import_success": "Import successful! Data restored",
+  "settings_import_invalid_error": "Not a valid Rembirth backup file",
+  "settings_import_failed_error": "Restoring backup failed"
 }

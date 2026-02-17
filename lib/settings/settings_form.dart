@@ -319,8 +319,8 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
           // --- Backup Section ---
           const Divider(),
           ListTile(
-            title: const Text('Export Data'), // TODO: Replace with _l10n.settings_export_label
-            subtitle: const Text('Save or share your birthdays'),
+            title: Text(_l10n.settings_export_title),
+            subtitle: Text(_l10n.settings_export_subtitle),
             trailing: Row(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.end,
@@ -336,7 +336,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
                       await backupService.shareBackup();
                     } catch (e) {
-                      showStatus("Sharing backup failed");
+                      showStatus(_l10n.settings_export_share_error);
                     }
                   },
                   child: const Icon(Icons.share_outlined, size: 32),
@@ -353,7 +353,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
                       await backupService.saveBackupToDevice();
                     } catch (e) {
-                      showStatus("Saving backup failed");
+                      showStatus(_l10n.settings_export_save_error);
                     }
                   },
                   child: const Icon(Icons.file_upload_outlined, size: 32),
@@ -362,8 +362,8 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
             ),
           ),
           ListTile(
-            title: const Text('Import Data'), // TODO: Replace with _l10n.settings_import_label
-            subtitle: const Text('Restore birthdays from a backup file'),
+            title: Text(_l10n.settings_import_title),
+            subtitle: Text(_l10n.settings_import_subtitle),
             trailing: const Icon(Icons.file_download_outlined, size: 32),
             onTap: () async {
               try {
@@ -375,13 +375,13 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 final success = await backupService.importData();
 
                 if (success) {
-                  showStatus("Import successful! Data restored");
+                  showStatus(_l10n.settings_import_success);
                 }
               } catch (e) {
                 if (e is FormatException) {
-                  showStatus("Not a valid Rembirth backup file");
+                  showStatus(_l10n.settings_import_invalid_error);
                 } else {
-                  showStatus("Restoring backup failed");
+                  showStatus(_l10n.settings_import_failed_error);
                 }
               }
             },
