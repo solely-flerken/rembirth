@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:package_info_plus/package_info_plus.dart';
 import 'package:provider/provider.dart';
 import 'package:rembirth/settings/settings_controller.dart';
 import 'package:rembirth/settings/themes.dart';
@@ -389,7 +390,20 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
           // --- About ---
           const Divider(),
-          ListTile(title: Text(_l10n.settings_about_label), subtitle: const Text('Rembirth v1.0.0'), onTap: () => {}),
+          FutureBuilder<PackageInfo>(
+              future: PackageInfo.fromPlatform(),
+              builder: (context, snapshot) {
+                String versionString = '...';
+
+                if (snapshot.hasData) {
+                  final name = snapshot.data!.appName;
+                  final version = snapshot.data!.version;
+                  versionString = '$name v$version';
+                }
+
+                return ListTile(title: Text(_l10n.settings_about_label), subtitle: Text(versionString), onTap: () => {});
+              }
+          ),
 
           // --- Restore Defaults ---
           const Divider(),
