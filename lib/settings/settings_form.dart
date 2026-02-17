@@ -336,7 +336,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
                       await backupService.shareBackup();
                     } catch (e) {
-                      showStatus("Share failed: ${e.toString()}"); // TODO: Remove error message
+                      showStatus("Sharing backup failed");
                     }
                   },
                   child: const Icon(Icons.share_outlined, size: 32),
@@ -353,7 +353,7 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
 
                       await backupService.saveBackupToDevice();
                     } catch (e) {
-                      showStatus("Save failed: ${e.toString()}"); // TODO: Remove error message
+                      showStatus("Saving backup failed");
                     }
                   },
                   child: const Icon(Icons.file_upload_outlined, size: 32),
@@ -375,13 +375,13 @@ class _SettingsPageWidgetState extends State<SettingsPageWidget> {
                 final success = await backupService.importData();
 
                 if (success) {
-                  showStatus("Import successful! Data restored.");
+                  showStatus("Import successful! Data restored");
                 }
               } catch (e) {
                 if (e is FormatException) {
-                  showStatus("Not a valid Rembirth backup file.");
+                  showStatus("Not a valid Rembirth backup file");
                 } else {
-                  showStatus("Import failed: ${e.toString()}");
+                  showStatus("Restoring backup failed");
                 }
               }
             },
