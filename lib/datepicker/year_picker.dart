@@ -65,9 +65,12 @@ class YearPickerWidget extends StatelessWidget {
                 ),
                 elevation: isSelected || isCurrentYear ? 5 : 2,
                 child: Center(
-                  child: Text(
-                    year == null ? l10n.date_unknown_value : year.toString(),
-                    style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: textColor),
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      year == null ? l10n.date_unknown_value : year.toString(),
+                      style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: textColor),
+                    ),
                   ),
                 ),
               ),

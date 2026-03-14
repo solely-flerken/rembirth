@@ -33,9 +33,12 @@ class DatePickerInfoCard extends StatelessWidget {
             ),
             elevation: 5,
             child: Center(
-              child: Text(
-                text,
-                style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: textColor ?? normalTextColor),
+              child: FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  text,
+                  style: TextStyle(fontWeight: FontWeight.w600, fontSize: 16, color: textColor ?? normalTextColor),
+                ),
               ),
             ),
           ),

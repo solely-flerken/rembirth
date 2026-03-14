@@ -236,21 +236,30 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.end,
                 children: [
-                  TextButton(
-                    onPressed: _cancelForm,
-                    style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0)),
-                    child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400), l10n.cancel),
+                  Flexible(
+                    child: TextButton(
+                      onPressed: _cancelForm,
+                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0)),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400), l10n.cancel)
+                      ),
+                    ),
                   ),
                   const SizedBox(width: 12),
-                  ElevatedButton(
-                    onPressed: _submitForm,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).colorScheme.primary,
-                      foregroundColor: Colors.white,
-                      padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                  Flexible(
+                    child: ElevatedButton(
+                      onPressed: _submitForm,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Theme.of(context).colorScheme.primary,
+                        foregroundColor: Colors.white,
+                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                      ),
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600), l10n.save)),
                     ),
-                    child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600), l10n.save),
                   ),
                 ],
               ),
