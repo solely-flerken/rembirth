@@ -28,7 +28,7 @@ class DayPicker extends StatelessWidget {
 
     List<String> weekdayHeaders = _getLocalizedShortWeekdays(context);
     final int firstDayOffset = DateUtils.firstDayOffset(effectiveYear, month, localizations);
-    final int daysInMonth = DateUtils.getDaysInMonth(effectiveYear, month);
+    final int daysInMonth = DateUtils.getDaysInMonth(month == 2 && year == null ? 2000 : effectiveYear, month);
     final int itemCount = 7 + firstDayOffset + daysInMonth;
 
     final DateTime today = DateTime.now();
@@ -61,7 +61,7 @@ class DayPicker extends StatelessWidget {
             }
 
             final int day = index - 7 - firstDayOffset + 1;
-            final bool isToday = isCurrentMonth && today.day == day;
+            final bool isToday = today.month == month && today.day <= daysInMonth && today.day == day;
             final bool isSelected = initialDay == day;
 
             Color? textColor = Theme.of(context).textTheme.bodyLarge?.color;
