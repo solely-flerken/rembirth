@@ -7,6 +7,10 @@
         android:label="Rembirth"
         android:name="${applicationName}"
         android:icon="@mipmap/launcher_icon">
+
+        <meta-data android:name="com.google.firebase.messaging.default_notification_icon" android:resource="@drawable/app_icon" />
+        <meta-data android:name="flutter_local_notifications.default_icon" android:resource="@drawable/app_icon" />
+
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationReceiver" />
         <receiver android:exported="false" android:name="com.dexterous.flutterlocalnotifications.ScheduledNotificationBootReceiver">
             <intent-filter>

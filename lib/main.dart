@@ -79,8 +79,13 @@ Future<void> main() async {
   );
 
   // Notifications setup
-  await notificationService.init();
-  await notificationService.requestPermissions();
+  try {
+    await notificationService.init();
+    await notificationService.requestPermissions();
+  } catch (e) {
+    logger.d("Notification initialization failed: $e");
+  }
+
   notificationService.onNotificationTap = (birthdayId) {
     logger.d("Tapped on birthday notification with ID: $birthdayId");
   };

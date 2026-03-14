@@ -27,7 +27,7 @@ class NotificationService {
   Future<void> init() async {
     await _initializeTimeZone();
 
-    const androidSettings = AndroidInitializationSettings(kLauncherIcon);
+    const androidSettings = AndroidInitializationSettings(kNotificationIcon);
     const iosSettings = DarwinInitializationSettings(
       requestAlertPermission: false,
       requestBadgePermission: false,
@@ -169,7 +169,7 @@ class NotificationService {
         channelDescription: 'Channel for birthday notifications',
         importance: Importance.max,
         priority: Priority.high,
-        icon: kLauncherIcon,
+        icon: kNotificationIcon,
       ),
       iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
     );
