@@ -25,12 +25,12 @@ Since this app uses Isar v3 for data persistence, you’ll need to run the follo
 
 Get shared preferences.
 ```sh
-  adb shell "run-as com.example.rembirth cat shared_prefs/FlutterSharedPreferences.xml"
+  adb shell "run-as com.solely.rembirth cat shared_prefs/FlutterSharedPreferences.xml"
 ```
 
 Get all scheduled notifications for the app.
 ```sh
-  adb shell dumpsys alarm | grep com.example.rembirth
+  adb shell dumpsys alarm | grep com.solely.rembirth
 ```
 
 ## Release
