@@ -32,7 +32,6 @@ class DayPicker extends StatelessWidget {
     final int itemCount = 7 + firstDayOffset + daysInMonth;
 
     final DateTime today = DateTime.now();
-    final bool isCurrentMonth = today.month == month && today.year == year;
 
     return Padding(
       padding: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 16.0),
