@@ -1,7 +1,7 @@
 name: rembirth
 description: "A minimalistic app to help you remember your friends' birthdays."
 publish_to: 'none'
-version: 2.1.0+2
+version: 2.1.1+3
 
 environment:
   sdk: ^3.8.0
