@@ -1,0 +1,5 @@
+Welcome to Rembirth!
+- Save birthdays with a name, date, and category
+- Create and manage your own custom categories
+- Get notified so you never miss a birthday
+- Customize the app to fit your preferences

@@ -16,7 +16,9 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
 
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
@@ -43,6 +45,9 @@ jobs:
       - name: Build APK
         run: flutter build apk --release
 
+      - name: Rename release notes
+        run: cp whatsnew/whatsnew-en-US.txt whatsnew/release-notes.txt
+
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
         with:
@@ -52,3 +57,4 @@ jobs:
           files: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/flutter-apk/app-release.apk.sha1
+            whatsnew/release-notes.txt

@@ -38,7 +38,8 @@ Releases are fully automated using GitHub Actions. To deploy a new version:
 
 1.  **Update Version:** Bump the version in `pubspec.yaml`
     * **Important:** The **build number** must **always increase** and **never reset** for any version changes
-2.  **Commit, Tag & Push:** Use the commit message format `🔖 vX.Y.Z+N` for the version change in the `pubspec.yaml`, create a tag matching the version (excluding the build number) and push it.
+2.  **Release Notes:** Optionally, you can change the contents in the `whatsnew` directory to add release notes
+3.   **Commit, Tag & Push:** Use the commit message format `🔖 vX.Y.Z+N` for the version change in the `pubspec.yaml`, create a tag matching the version (excluding the build number) and push it.
 
 ```bash
 git tag v1.0.0
