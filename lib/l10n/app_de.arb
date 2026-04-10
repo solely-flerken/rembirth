@@ -172,5 +172,14 @@
   "settings_import_subtitle": "Geburtstage aus einem Backup wiederherstellen",
   "settings_import_success": "Import erfolgreich! Daten wiederhergestellt",
   "settings_import_invalid_error": "Keine gültige Rembirth-Backup-Datei",
-  "settings_import_failed_error": "Wiederherstellen des Backups fehlgeschlagen"
+  "settings_import_failed_error": "Wiederherstellen des Backups fehlgeschlagen",
+
+  "@_REMINDERS": {},
+
+  "reminders_label": "Erinnerungen",
+  "reminder_on_birthday": "Am Geburtstag",
+  "reminder_1_day_before": "1 Tag vorher",
+  "reminder_3_days_before": "3 Tage vorher",
+  "reminder_1_week_before": "1 Woche vorher",
+  "reminder_1_month_before": "1 Monat vorher"
 }

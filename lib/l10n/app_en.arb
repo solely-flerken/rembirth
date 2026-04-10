@@ -172,5 +172,14 @@
   "settings_import_subtitle": "Restore birthdays from a backup file",
   "settings_import_success": "Import successful! Data restored",
   "settings_import_invalid_error": "Not a valid Rembirth backup file",
-  "settings_import_failed_error": "Restoring backup failed"
+  "settings_import_failed_error": "Restoring backup failed",
+
+  "@_REMINDERS": {},
+
+  "reminders_label": "Reminders",
+  "reminder_on_birthday": "On the birthday",
+  "reminder_1_day_before": "1 day before",
+  "reminder_3_days_before": "3 days before",
+  "reminder_1_week_before": "1 week before",
+  "reminder_1_month_before": "1 month before"
 }

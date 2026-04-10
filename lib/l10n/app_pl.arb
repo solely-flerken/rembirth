@@ -172,5 +172,14 @@
   "settings_import_subtitle": "Przywróć dane z kopii zapasowej",
   "settings_import_success": "Pomyślnie przywrócono dane",
   "settings_import_invalid_error": "Nieprawidłowy format pliku",
-  "settings_import_failed_error": "Wystąpił błąd podczas importu"
+  "settings_import_failed_error": "Wystąpił błąd podczas importu",
+
+  "@_REMINDERS": {},
+
+  "reminders_label": "Przypomnienia",
+  "reminder_on_birthday": "W dniu urodzin",
+  "reminder_1_day_before": "1 dzień wcześniej",
+  "reminder_3_days_before": "3 dni wcześniej",
+  "reminder_1_week_before": "1 tydzień wcześniej",
+  "reminder_1_month_before": "1 miesiąc wcześniej"
 }

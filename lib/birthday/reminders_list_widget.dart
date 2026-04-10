@@ -1,20 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:rembirth/notifications/notification_constants.dart';
 
+import '../l10n/app_localizations.dart';
+
 class _Preset {
   final int days;
   final String label;
 
   const _Preset({required this.days, required this.label});
 }
-
-const List<_Preset> _presets = [
-  _Preset(days: 0, label: 'On the birthday'),
-  _Preset(days: 1, label: '1 day before'),
-  _Preset(days: 3, label: '3 days before'),
-  _Preset(days: 7, label: '1 week before'),
-  _Preset(days: 30, label: '1 month before'),
-];
 
 class RemindersListWidget extends StatelessWidget {
   final List<int> reminders;
@@ -40,6 +34,15 @@ class RemindersListWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final theme = Theme.of(context);
+    final l10n = AppLocalizations.of(context)!;
+
+    final List<_Preset> presets = [
+      _Preset(days: 0, label: l10n.reminder_on_birthday),
+      _Preset(days: 1, label: l10n.reminder_1_day_before),
+      _Preset(days: 3, label: l10n.reminder_3_days_before),
+      _Preset(days: 7, label: l10n.reminder_1_week_before),
+      _Preset(days: 30, label: l10n.reminder_1_month_before),
+    ];
 
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
@@ -47,7 +50,7 @@ class RemindersListWidget extends StatelessWidget {
         Padding(
           padding: const EdgeInsets.only(left: 4, bottom: 8),
           child: Text(
-            'Reminders',
+            l10n.reminders_label,
             style: TextStyle(
               fontSize: 13,
               fontWeight: FontWeight.w600,
@@ -62,7 +65,7 @@ class RemindersListWidget extends StatelessWidget {
           elevation: 0,
           color: theme.colorScheme.surfaceContainerHighest.withValues(alpha: 0.4),
           child: Column(
-            children: _presets.map((preset) {
+            children: presets.map((preset) {
               final isLocked = preset.days == 0;
               final isOn = isLocked || reminders.contains(preset.days);
               final canToggleOn = !_isAtMax || isOn;
