@@ -47,6 +47,13 @@ with reminders that actually show up when it matters.
 
 ---
 
+## TODO
+- ~~Localizations for notifications and new birthday entry creation form.~~
+- Create new categories through birthday entry creation form.
+- Choose custom number of days for reminders.
+
+---
+
 ## Privacy
 
 This app stores all data locally on your device. No data is sent to any server. </br>
