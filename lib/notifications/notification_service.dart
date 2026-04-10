@@ -3,6 +3,7 @@ import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:flutter_timezone/flutter_timezone.dart';
+import 'package:rembirth/l10n/app_localizations.dart';
 import 'package:rembirth/notifications/notification_constants.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
@@ -21,6 +22,20 @@ class NotificationService {
   NotificationService._internal();
 
   final FlutterLocalNotificationsPlugin _plugin = FlutterLocalNotificationsPlugin();
+
+  AppLocalizations? _l10n;
+
+  Future<void> setLocale(Locale locale) async {
+    _l10n = await AppLocalizations.delegate.load(locale);
+    logger.i("NotificationService: Locale set to ${locale.languageCode}");
+  }
+
+  AppLocalizations get l10n {
+    if (_l10n == null) {
+      throw Exception("NotificationService: l10n not initialized. Call setLocale() first.");
+    }
+    return _l10n!;
+  }
 
   void Function(int)? onNotificationTap;
 
@@ -168,12 +183,12 @@ class NotificationService {
     final String title;
     final String body;
     if (daysBefore == 0) {
-      title = "It's ${birthday.name}'s Birthday! 🎂";
-      body = "Don't forget to send your best wishes today.";
+      title = l10n.notification_birthday_today_title(birthday.name ?? "");
+      body = l10n.notification_birthday_today_body;
     } else {
-      final dayLabel = daysBefore == 1 ? 'day' : 'days';
-      title = "${birthday.name}'s Birthday in $daysBefore $dayLabel! 🎂";
-      body = "Plan ahead. Their special day is coming up soon.";
+      final unit = daysBefore == 1 ? l10n.day_singular : l10n.day_plural;
+      title = l10n.notification_birthday_upcoming_title(birthday.name ?? "", daysBefore, unit);
+      body = l10n.notification_birthday_upcoming_body;
     }
 
     await _plugin.zonedSchedule(

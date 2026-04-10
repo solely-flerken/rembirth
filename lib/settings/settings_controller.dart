@@ -33,6 +33,18 @@ class SettingsController extends ChangeNotifier {
   Future<void> setLocale(String? newLocaleCode) async {
     if (_settings.localeCode == newLocaleCode) return;
     _settings.localeCode = newLocaleCode;
+
+    await _notificationService.setLocale(_settings.locale);
+
+    if (_settings.notificationsEnabled) {
+      logger.i("Locale changed. Rescheduling notifications to update language...");
+      final allBirthdays = await _birthdaySaveManager.loadAll();
+      await _notificationService.rescheduleAllNotifications(
+        allBirthdays,
+        notificationTime: _settings.notificationTime,
+      );
+    }
+
     await _saveAndNotify();
   }
 
@@ -83,7 +95,9 @@ class SettingsController extends ChangeNotifier {
   Future<void> restoreDefaults() async {
     final defaultSettings = Settings.defaults();
 
-    final shouldRescheduleNotifications = _settings.notificationTime != defaultSettings.notificationTime;
+    final bool localeChanged = _settings.localeCode != defaultSettings.localeCode;
+    final bool timeChanged = _settings.notificationTime != defaultSettings.notificationTime;
+    final bool statusChanged = _settings.notificationsEnabled != defaultSettings.notificationsEnabled;
 
     _settings.theme = defaultSettings.theme;
     _settings.positionToolbarBottom = defaultSettings.positionToolbarBottom;
@@ -93,14 +107,17 @@ class SettingsController extends ChangeNotifier {
     _settings.notificationTimeMinute = defaultSettings.notificationTimeMinute;
     _settings.categoryViewEnabled = defaultSettings.categoryViewEnabled;
 
-    if (_settings.notificationsEnabled && shouldRescheduleNotifications) {
-      logger.i("Restoring defaults: Notifications are enabled, rescheduling...");
-      final allBirthdays = await _birthdaySaveManager.loadAll();
-      await _notificationService.rescheduleAllNotifications(allBirthdays, notificationTime: _settings.notificationTime);
-    } else if (_settings.notificationsEnabled && !shouldRescheduleNotifications) {
-      logger.i("Restoring defaults: Default notification settings already used...");
+    if (_settings.notificationsEnabled) {
+      if (localeChanged || timeChanged || statusChanged) {
+        logger.i("Restoring defaults: Rescheduling notifications...");
+        final allBirthdays = await _birthdaySaveManager.loadAll();
+        await _notificationService.rescheduleAllNotifications(
+          allBirthdays,
+          notificationTime: _settings.notificationTime,
+        );
+      }
     } else {
-      logger.i("Restoring defaults: Notifications are disabled, cancelling all...");
+      logger.i("Restoring defaults: Notifications disabled, cancelling...");
       await _notificationService.cancelAllNotifications();
     }
 

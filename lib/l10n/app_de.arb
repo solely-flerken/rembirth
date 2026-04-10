@@ -181,5 +181,15 @@
   "reminder_1_day_before": "1 Tag vorher",
   "reminder_3_days_before": "3 Tage vorher",
   "reminder_1_week_before": "1 Woche vorher",
-  "reminder_1_month_before": "1 Monat vorher"
+  "reminder_1_month_before": "1 Monat vorher",
+
+  "@_NOTIFICATIONS": {},
+
+  "notification_birthday_today_title": "{name} hat heute Geburtstag! 🎂",
+  "notification_birthday_today_body": "Vergiss nicht, heute zu gratulieren.",
+
+  "notification_birthday_upcoming_title": "{name} hat in {count} {unit} Geburtstag! 🎂",
+  "notification_birthday_upcoming_body": "Zeit zu planen! Der große Tag steht kurz bevor.",
+  "day_singular": "Tag",
+  "day_plural": "Tagen"
 }

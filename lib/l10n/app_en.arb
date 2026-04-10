@@ -181,5 +181,27 @@
   "reminder_1_day_before": "1 day before",
   "reminder_3_days_before": "3 days before",
   "reminder_1_week_before": "1 week before",
-  "reminder_1_month_before": "1 month before"
+  "reminder_1_month_before": "1 month before",
+
+  "@_NOTIFICATIONS": {},
+
+  "notification_birthday_today_title": "It's {name}'s Birthday! 🎂",
+  "@notification_birthday_today_title": {
+    "placeholders": {
+      "name": { "type": "String" }
+    }
+  },
+  "notification_birthday_today_body": "Don't forget to send your best wishes today.",
+
+  "notification_birthday_upcoming_title": "{name}'s Birthday in {count} {unit}! 🎂",
+  "@notification_birthday_upcoming_title": {
+    "placeholders": {
+      "name": { "type": "String" },
+      "count": { "type": "int" },
+      "unit": { "type": "String" }
+    }
+  },
+  "notification_birthday_upcoming_body": "Plan ahead. Their special day is coming up soon.",
+  "day_singular": "day",
+  "day_plural": "days"
 }

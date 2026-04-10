@@ -23,15 +23,21 @@ void callbackDispatcher() {
   Workmanager().executeTask((task, inputData) async {
     if (task == rescheduleTask) {
       await IsarDatabase.open([BirthdayEntrySchema, BirthdayEntryCategorySchema]);
-      final birthdayEntryService = IsarSaveService<BirthdayEntry>();
-      final saveManagerBirthdayEntry = SaveManager(localService: birthdayEntryService, saveMode: SaveMode.local);
+
+      final settings = await SettingsService.loadSettings();
       final notificationService = NotificationService();
 
       // Initialize notifications
       await notificationService.init();
 
+      final locale = settings.locale;
+      await notificationService.setLocale(locale);
+
       // Load birthdays and reschedule
+      final birthdayEntryService = IsarSaveService<BirthdayEntry>();
+      final saveManagerBirthdayEntry = SaveManager(localService: birthdayEntryService, saveMode: SaveMode.local);
       final allBirthdays = await saveManagerBirthdayEntry.loadAll();
+
       await notificationService.setupScheduledNotificationsFromPrefs(allBirthdays);
     }
     return Future.value(true);
@@ -77,6 +83,10 @@ Future<void> main() async {
     notificationService: notificationService,
     birthdaySaveManager: saveManagerBirthdayEntry,
   );
+
+  // Initialize locale
+  final initialLocale = settings.locale;
+  await notificationService.setLocale(initialLocale);
 
   // Notifications setup
   try {
@@ -132,8 +142,12 @@ class _MainAppState extends State<MainApp> with WidgetsBindingObserver {
   void didChangeLocales(List<Locale>? locales) {
     super.didChangeLocales(locales);
     final settingsController = context.read<SettingsController>();
-    if (settingsController.settings.localeCode == null) {
-      setState(() {});
+    if (settingsController.settings.localeCode == null && locales != null && locales.isNotEmpty) {
+      final notificationService = context.read<NotificationService>();
+      notificationService.setLocale(locales.first).then((_) {
+        // Could reschedule notifications here to update immediately when system languages changes.
+        // Won't change notification language when the app is closed though.
+      });
     }
   }
 
