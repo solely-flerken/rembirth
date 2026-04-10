@@ -171,11 +171,10 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
   //#region Entry managing
 
   Future<void> _addEntry() async {
-    final returnedEntry = await Navigator.push<BirthdayEntry?>(
+    final returnedEntry = await Navigator.push<BirthdayEntry>(
       context,
-      DialogRoute(
+      MaterialPageRoute(
         builder: (context) => BirthdayEntryCreationForm(categories: _categories),
-        context: context,
       ),
     );
 
@@ -201,11 +200,10 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     final entryToEdit = _entries.firstWhereOrNull((e) => e.id == _selectedEntryId);
     if (entryToEdit == null) return;
 
-    final returnedEntry = await Navigator.push<BirthdayEntry?>(
+    final returnedEntry = await Navigator.push<BirthdayEntry>(
       context,
-      DialogRoute(
+      MaterialPageRoute(
         builder: (context) => BirthdayEntryCreationForm(initialEntry: entryToEdit, categories: _categories),
-        context: context,
       ),
     );
 
@@ -238,7 +236,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
       _selectedEntryId = null;
     });
 
-    await _notificationService.cancelBirthdayNotification(entryToDelete.id);
+    await _notificationService.cancelBirthdayNotification(entryToDelete);
     await _entryManager.delete(entryToDelete.id);
   }
 

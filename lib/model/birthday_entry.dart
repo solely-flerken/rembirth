@@ -19,13 +19,16 @@ class BirthdayEntry extends SyncableItem {
   @Index()
   int? categoryId;
 
+  List<int>? reminders;
+
   factory BirthdayEntry.fromJson(Map<String, dynamic> json) {
     final entry = BirthdayEntry()
       ..name = json['name'] as String?
       ..year = json['year'] as int?
       ..month = json['month'] as int?
       ..day = json['day'] as int?
-      ..categoryId = json['categoryId'] as int?;
+      ..categoryId = json['categoryId'] as int?
+      ..reminders = json['reminders'] as List<int>?;
 
     // Restore ID if present (Crucial for linking to categories)
     if (json['id'] != null) {
@@ -42,6 +45,7 @@ class BirthdayEntry extends SyncableItem {
 
     return entry;
   }
+
   Map<String, dynamic> toJson() {
     return {
       'id': id,
@@ -50,6 +54,7 @@ class BirthdayEntry extends SyncableItem {
       'month': month,
       'day': day,
       'categoryId': categoryId,
+      'reminders': reminders,
       'createdAt': createdAt.toIso8601String(),
       'updatedAt': updatedAt.toIso8601String(),
     };

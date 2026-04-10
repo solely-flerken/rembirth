@@ -53,6 +53,44 @@ class NotificationService {
     );
   }
 
+  static Future<void> _initializeTimeZone() async {
+    tz.initializeTimeZones();
+    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
+    tz.setLocalLocation(tz.getLocation(timeZoneName));
+  }
+
+  static NotificationDetails _notificationDetails() {
+    return const NotificationDetails(
+      android: AndroidNotificationDetails(
+        'birthday_channel_id',
+        'Birthday Reminders',
+        channelDescription: 'Channel for birthday notifications',
+        importance: Importance.max,
+        priority: Priority.high,
+        icon: kNotificationIcon,
+      ),
+      iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
+    );
+  }
+
+  static int _getNotificationId(int entryId, int slotIndex){
+    return (entryId * maxRemindersPerEntry) + slotIndex;
+  }
+
+  Future<void> requestPermissions() async {
+    if (Platform.isIOS) {
+      await _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()?.requestPermissions(
+        alert: true,
+        badge: true,
+        sound: true,
+      );
+    } else if (Platform.isAndroid) {
+      await _plugin
+          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
+          ?.requestNotificationsPermission();
+    }
+  }
+
   Future<void> setupScheduledNotificationsFromPrefs(List<BirthdayEntry> birthdays) async {
     final prefs = await SharedPreferences.getInstance();
     final bool notificationsEnabled = prefs.getBool(kNotificationsEnabledKey) ?? true;
@@ -72,54 +110,91 @@ class NotificationService {
   }
 
   Future<void> scheduleBirthdayNotification(
-    BirthdayEntry birthday, {
+    BirthdayEntry entry, {
     TimeOfDay notificationTime = const TimeOfDay(hour: 9, minute: 0),
     bool testMode = false,
   }) async {
+    await cancelBirthdayNotification(entry);
+    final reminders = entry.reminders ?? [0];
+    for (int i = 0; i < reminders.length && i < maxRemindersPerEntry; i++) {
+      try {
+        await _scheduleNotification(entry, reminders[i], i, notificationTime, testMode);
+      } catch (e) {
+        logger.d('Error scheduling notification for ${entry.name} (${reminders[i]} days before): $e');
+      }
+    }
+  }
+
+  Future<void> _scheduleNotification(
+    BirthdayEntry birthday,
+    int daysBefore,
+    int slotIndex,
+    TimeOfDay notificationTime,
+    bool testMode,
+  ) async {
     final now = tz.TZDateTime.now(tz.local);
+    final notificationId = _getNotificationId(birthday.id, slotIndex);
     late tz.TZDateTime scheduledDate;
 
     if (testMode) {
       scheduledDate = now.add(const Duration(seconds: 5));
     } else {
+      final birthdayThisYear = DateTime(now.year, birthday.month!, birthday.day!);
+      final targetDate = birthdayThisYear.subtract(Duration(days: daysBefore));
+
       scheduledDate = tz.TZDateTime(
         tz.local,
-        now.year,
-        birthday.month!,
-        birthday.day!,
+        targetDate.year,
+        targetDate.month,
+        targetDate.day,
         notificationTime.hour,
         notificationTime.minute,
       );
 
-      // If the birthday this year has already passed, schedule for next year
       if (scheduledDate.isBefore(now)) {
+        final birthdayNextYear = DateTime(now.year + 1, birthday.month!, birthday.day!);
+        final targetDateNextYear = birthdayNextYear.subtract(Duration(days: daysBefore));
         scheduledDate = tz.TZDateTime(
           tz.local,
-          now.year + 1,
-          birthday.month!,
-          birthday.day!,
+          targetDateNextYear.year,
+          targetDateNextYear.month,
+          targetDateNextYear.day,
           notificationTime.hour,
           notificationTime.minute,
         );
       }
     }
 
+    final String title;
+    final String body;
+    if (daysBefore == 0) {
+      title = "It's ${birthday.name}'s Birthday! 🎂";
+      body = "Don't forget to send your best wishes today.";
+    } else {
+      final dayLabel = daysBefore == 1 ? 'day' : 'days';
+      title = "${birthday.name}'s Birthday in $daysBefore $dayLabel! 🎂";
+      body = "Plan ahead. Their special day is coming up soon.";
+    }
+
     await _plugin.zonedSchedule(
-      birthday.id,
-      "It's ${birthday.name}'s Birthday! 🎂",
-      "Don't forget to send your best wishes today.",
+      notificationId,
+      title,
+      body,
       scheduledDate,
       _notificationDetails(),
       payload: jsonEncode({'id': birthday.id}),
       androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
     );
 
-    logger.i('Scheduled notification for ${birthday.name} on $scheduledDate');
+    logger.i('Scheduled notification for ${birthday.name} on $scheduledDate ($daysBefore days before)');
   }
 
-  Future<void> cancelBirthdayNotification(int birthdayId) async {
-    await _plugin.cancel(birthdayId);
-    logger.i('Cancelled notification for birthday ID: $birthdayId');
+  Future<void> cancelBirthdayNotification(BirthdayEntry entry) async {
+    for (int i = 0; i < maxRemindersPerEntry; i++) {
+      await _plugin.cancel(_getNotificationId(entry.id, i));
+    }
+
+    logger.i('Cancelled all notifications for birthday ID: ${entry.id}');
   }
 
   Future<void> rescheduleAllNotifications(
@@ -139,39 +214,5 @@ class NotificationService {
   Future<void> cancelAllNotifications() async {
     await _plugin.cancelAll();
     logger.i("Cancelled all scheduled notifications.");
-  }
-
-  Future<void> _initializeTimeZone() async {
-    tz.initializeTimeZones();
-    final String timeZoneName = await FlutterTimezone.getLocalTimezone();
-    tz.setLocalLocation(tz.getLocation(timeZoneName));
-  }
-
-  Future<void> requestPermissions() async {
-    if (Platform.isIOS) {
-      await _plugin.resolvePlatformSpecificImplementation<IOSFlutterLocalNotificationsPlugin>()?.requestPermissions(
-        alert: true,
-        badge: true,
-        sound: true,
-      );
-    } else if (Platform.isAndroid) {
-      await _plugin
-          .resolvePlatformSpecificImplementation<AndroidFlutterLocalNotificationsPlugin>()
-          ?.requestNotificationsPermission();
-    }
-  }
-
-  NotificationDetails _notificationDetails() {
-    return const NotificationDetails(
-      android: AndroidNotificationDetails(
-        'birthday_channel_id',
-        'Birthday Reminders',
-        channelDescription: 'Channel for birthday notifications',
-        importance: Importance.max,
-        priority: Priority.high,
-        icon: kNotificationIcon,
-      ),
-      iOS: DarwinNotificationDetails(presentAlert: true, presentBadge: true, presentSound: true),
-    );
   }
 }

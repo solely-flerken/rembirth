@@ -1,6 +1,7 @@
 import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:rembirth/birthday/reminders_list_widget.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
 import 'package:rembirth/util/logger.dart';
 
@@ -25,6 +26,7 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
   String? _name;
   BirthdayEntryCategory? _category;
   PartialDate? _selectedDate;
+  List<int> _reminders = [0];
 
   List<BirthdayEntryCategory> _categories = [];
 
@@ -50,7 +52,16 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
         month: widget.initialEntry!.month!,
         day: widget.initialEntry!.day!,
       );
+
+      final existing = widget.initialEntry!.reminders ?? [];
+      _reminders = ({0, ...existing}).toList()..sort();
     }
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    super.dispose();
   }
 
   void _submitForm() {
@@ -68,31 +79,27 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
       _dateError = _selectedDate == null ? l10n.entry_creation_date_validation_error : null;
     });
 
-    // Validate
     if (_nameError != null || _dateError != null) {
       logger.w('Creation form: Validation failed.');
       return;
     }
     logger.d('Creation form: Passed validation.');
 
-    int? id = widget.initialEntry?.id;
+    final id = widget.initialEntry?.id;
 
     final newEntry = BirthdayEntry()
       ..name = _name
       ..categoryId = _category?.id
       ..year = _selectedDate?.year
       ..month = _selectedDate?.month
-      ..day = _selectedDate?.day;
+      ..day = _selectedDate?.day
+      ..reminders = List<int>.from(_reminders);
 
-    if(id != null){
+    if (id != null) {
       newEntry.id = id;
     }
 
     Navigator.of(context).pop(newEntry);
-  }
-
-  void _cancelForm() {
-    Navigator.of(context).pop();
   }
 
   Future<void> _openDatePicker(
@@ -122,149 +129,150 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
 
     /// Construct page title
     final title = l10n.entry_creation_label;
-
     final words = title.split(' ');
     final highlightIndex = words.length ~/ 2;
 
-    List<InlineSpan> spans = [];
-
-    for (var i = 0; i < words.length; i++) {
-      spans.add(
-        TextSpan(
-          text: i < words.length - 1 ? '${words[i]} ' : words[i],
-          style: TextStyle(color: i == highlightIndex ? theme.colorScheme.primary : null),
-        ),
-      );
-    }
-
-    return Dialog(
-      shape: const RoundedRectangleBorder(borderRadius: BorderRadius.all(Radius.circular(20.0))),
-      child: SizedBox(
-        width: double.maxFinite,
-        height: 560,
-        child: Padding(
-          padding: const EdgeInsets.all(16.0),
-          child: Column(
-            children: <Widget>[
-              Padding(
-                padding: const EdgeInsets.all(16),
-                child: SizedBox(
-                  height: 40,
-                  child: Text.rich(
-                    TextSpan(
-                      style: TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
-                      children: spans,
+    return Scaffold(
+      body: SafeArea(
+        child: Column(
+          children: [
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 20.0),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    // Header Title
+                    Center(
+                      child: Text.rich(
+                        TextSpan(
+                          style: const TextStyle(fontSize: 26, fontWeight: FontWeight.bold),
+                          children: List.generate(words.length, (i) {
+                            return TextSpan(
+                              text: i < words.length - 1 ? '${words[i]} ' : words[i],
+                              style: TextStyle(color: i == highlightIndex ? theme.colorScheme.primary : null),
+                            );
+                          }),
+                        ),
+                        textAlign: TextAlign.center,
+                      ),
                     ),
-                    overflow: TextOverflow.ellipsis,
-                    maxLines: 1,
-                  ),
-                ),
-              ),
+                    const SizedBox(height: 8),
+                    const Divider(thickness: 1.5),
+                    const SizedBox(height: 24),
 
-              // Divider
-              Padding(padding: const EdgeInsets.symmetric(horizontal: 16), child: const Divider(thickness: 2)),
-              const SizedBox(height: 16),
+                    /// Name Field
+                    TextField(
+                      controller: nameController,
+                      style: const TextStyle(fontSize: 18),
+                      decoration: InputDecoration(
+                        labelText: l10n.name,
+                        prefixIcon: const Icon(Icons.person_outline),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        errorText: _nameError,
+                      ),
+                      onChanged: (value) => setState(() => _name = value),
+                    ),
+                    const SizedBox(height: 24),
 
-              /// Name
-              TextField(
-                style: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
-                controller: nameController,
-                decoration: InputDecoration(
-                  labelText: l10n.name,
-                  border: const OutlineInputBorder(),
-                  errorText: _nameError,
-                ),
-                onChanged: (value) {
-                  setState(() {
-                    _name = value;
-                  });
-                },
-              ),
-              const SizedBox(height: 16),
+                    /// Category Dropdown
+                    DropdownButtonFormField2<BirthdayEntryCategory?>(
+                      value: _category,
+                      hint: Text(l10n.entry_creation_category),
+                      items: [
+                        DropdownMenuItem<BirthdayEntryCategory?>(
+                          value: null,
+                          child: Text(l10n.entry_creation_no_category),
+                        ),
+                        ..._categories.map(
+                          (category) => DropdownMenuItem(
+                            value: category,
+                            child: Text(category.name ?? l10n.entry_creation_unknown_category),
+                          ),
+                        ),
+                      ],
+                      onChanged: (value) => setState(() => _category = value),
+                      buttonStyleData: const ButtonStyleData(padding: EdgeInsets.only(right: 8)),
+                      dropdownStyleData: DropdownStyleData(
+                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      decoration: InputDecoration(
+                        labelText: l10n.entry_creation_category,
+                        prefixIcon: const Icon(Icons.category_outlined),
+                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                    ),
+                    const SizedBox(height: 24),
 
-              /// Category
-              DropdownButtonFormField2<BirthdayEntryCategory?>(
-                value: _category,
-                items: [
-                  DropdownMenuItem<BirthdayEntryCategory?>(value: null, child: Text(l10n.entry_creation_no_category)),
-                  ..._categories.map((category) {
-                    return DropdownMenuItem(value: category, child: Text(category.name ?? l10n.entry_creation_unknown_category));
-                  }),
-                ],
-                onChanged: (value) {
-                  setState(() {
-                    _category = value;
-                  });
-                },
-                style: TextStyle(fontWeight: FontWeight.w400, fontSize: 20, color: theme.colorScheme.onSurface),
-                decoration: InputDecoration(labelText: l10n.entry_creation_category, border: const OutlineInputBorder()),
-                dropdownStyleData: DropdownStyleData(decoration: BoxDecoration(borderRadius: BorderRadius.circular(8))),
-              ),
-              const SizedBox(height: 16),
-
-              /// Date
-              InkWell(
-                onTap: () => _openDatePicker(context, DatePickerStep.year, null, _selectedDate),
-                child: InputDecorator(
-                  decoration: InputDecoration(labelText: l10n.entry_creation_date, border: OutlineInputBorder(), errorText: _dateError),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Expanded(
+                    /// Date Picker
+                    InkWell(
+                      onTap: () => _openDatePicker(context, DatePickerStep.year, null, _selectedDate),
+                      borderRadius: BorderRadius.circular(12),
+                      child: InputDecorator(
+                        decoration: InputDecoration(
+                          labelText: l10n.entry_creation_date,
+                          prefixIcon: const Icon(Icons.calendar_today_outlined),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          errorText: _dateError,
+                        ),
                         child: InteractiveDateDisplay(
                           year: _selectedDate?.year,
                           month: _selectedDate?.month,
                           day: _selectedDate?.day,
                           placeholderText: l10n.select_a_date,
-                          baseStyle: const TextStyle(fontWeight: FontWeight.w400, fontSize: 20),
-                          monthStyle: TextStyle(color: theme.colorScheme.primary),
+                          baseStyle: const TextStyle(fontSize: 18),
+                          monthStyle: TextStyle(color: theme.colorScheme.primary, fontWeight: FontWeight.bold),
                           onDayTap: () => _openDatePicker(context, DatePickerStep.day, DatePickerStep.day, _selectedDate),
                           onMonthTap: () => _openDatePicker(context, DatePickerStep.month, DatePickerStep.month, _selectedDate),
                           onYearTap: () => _openDatePicker(context, DatePickerStep.year, DatePickerStep.year, _selectedDate),
                         ),
                       ),
-                      const Icon(Icons.calendar_today),
-                    ],
-                  ),
+                    ),
+                    const SizedBox(height: 24),
+
+                    /// Reminders
+                    RemindersListWidget(
+                      reminders: _reminders,
+                      onRemindersChanged: (updated) => setState(() => _reminders = updated),
+                    ),
+                  ],
                 ),
               ),
+            ),
 
-              /// Spacer
-              const Spacer(),
-
-              /// Buttons
-              Row(
-                mainAxisAlignment: MainAxisAlignment.end,
+            /// Action Buttons
+            Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: Row(
                 children: [
-                  Flexible(
-                    child: TextButton(
-                      onPressed: _cancelForm,
-                      style: TextButton.styleFrom(padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0)),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w400), l10n.cancel)
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      style: OutlinedButton.styleFrom(
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                       ),
+                      child: Text(l10n.cancel, style: const TextStyle(fontSize: 16)),
                     ),
                   ),
                   const SizedBox(width: 12),
-                  Flexible(
+                  Expanded(
                     child: ElevatedButton(
                       onPressed: _submitForm,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: Theme.of(context).colorScheme.primary,
-                        foregroundColor: Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 24.0, vertical: 14.0),
-                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                        backgroundColor: theme.colorScheme.primary,
+                        foregroundColor: theme.colorScheme.onPrimary,
+                        padding: const EdgeInsets.symmetric(vertical: 16),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                        elevation: 0,
                       ),
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(style: const TextStyle(fontSize: 18, fontWeight: FontWeight.w600), l10n.save)),
+                      child: Text(l10n.save, style: const TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
                     ),
                   ),
                 ],
               ),
-            ],
-          ),
+            ),
+          ],
         ),
       ),
     );
