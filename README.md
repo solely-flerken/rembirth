@@ -49,7 +49,8 @@ with reminders that actually show up when it matters.
 
 ## TODO
 - ~~Localizations for notifications and new birthday entry creation form.~~
-- Create new categories through birthday entry creation form.
+- ~~Create new categories through birthday entry creation form.~~
+- Fix ghost entries which sometimes happen after deletion.
 - Choose custom number of days for reminders.
 
 ---
