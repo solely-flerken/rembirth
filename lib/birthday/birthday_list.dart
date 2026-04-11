@@ -231,10 +231,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     final entryToDelete = _entries.firstWhereOrNull((e) => e.id == _selectedEntryId);
     if (entryToDelete == null) return;
 
-    setState(() {
-      _entries.removeWhere((e) => e.id == _selectedEntryId);
-      _selectedEntryId = null;
-    });
+    setState(() => _selectedEntryId = null);
 
     await _notificationService.cancelBirthdayNotification(entryToDelete);
     await _entryManager.delete(entryToDelete.id);
