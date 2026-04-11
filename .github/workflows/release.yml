@@ -42,11 +42,20 @@ jobs:
           echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" >> android/key.properties
           echo "storeFile=upload-keystore.jks" >> android/key.properties
 
+      - name: Get version
+        id: version
+        run: |
+          VERSION=$(grep "^version:" pubspec.yaml | cut -d' ' -f2)
+          echo "VERSION=$VERSION" >> $GITHUB_OUTPUT
+
       - name: Build APK
         run: flutter build apk --release
 
+      - name: Build App Bundle
+        run: flutter build appbundle --release
+
       - name: Rename release notes
-        run: cp whatsnew/whatsnew-en-US.txt whatsnew/release-notes.txt
+        run: cp whatsnew/whatsnew-en-US release-notes.txt
 
       - name: Create GitHub Release
         uses: softprops/action-gh-release@v2
@@ -57,4 +66,14 @@ jobs:
           files: |
             build/app/outputs/flutter-apk/app-release.apk
             build/app/outputs/flutter-apk/app-release.apk.sha1
-            whatsnew/release-notes.txt
+            release-notes.txt
+
+      - name: Upload to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJsonPlainText: ${{ secrets.SERVICE_ACCOUNT_JSON }}
+          packageName: com.solely.rembirth
+          releaseFiles: build/app/outputs/bundle/release/app-release.aab
+          track: internal
+          releaseName: v${{ steps.version.outputs.VERSION }}
+          whatsNewDirectory: whatsnew/
