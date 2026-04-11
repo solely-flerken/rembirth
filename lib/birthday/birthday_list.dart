@@ -174,7 +174,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     final returnedEntry = await Navigator.push<BirthdayEntry>(
       context,
       MaterialPageRoute(
-        builder: (context) => BirthdayEntryCreationForm(categories: _categories),
+        builder: (context) => BirthdayEntryCreationForm(categories: _categories, categoryManager: _categoryManager),
       ),
     );
 
@@ -203,7 +203,7 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
     final returnedEntry = await Navigator.push<BirthdayEntry>(
       context,
       MaterialPageRoute(
-        builder: (context) => BirthdayEntryCreationForm(initialEntry: entryToEdit, categories: _categories),
+        builder: (context) => BirthdayEntryCreationForm(initialEntry: entryToEdit, categories: _categories, categoryManager: _categoryManager),
       ),
     );
 

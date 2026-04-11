@@ -1,8 +1,10 @@
 import 'package:collection/collection.dart';
 import 'package:dropdown_button2/dropdown_button2.dart';
 import 'package:flutter/material.dart';
+import 'package:rembirth/birthday/birthday_entry_category_creation_form.dart';
 import 'package:rembirth/birthday/reminders_list_widget.dart';
 import 'package:rembirth/model/birthday_entry_category.dart';
+import 'package:rembirth/save/save_manager.dart';
 import 'package:rembirth/util/logger.dart';
 
 import '../datepicker/date_display.dart';
@@ -15,8 +17,14 @@ import '../datepicker/partial_date.dart';
 class BirthdayEntryCreationForm extends StatefulWidget {
   final BirthdayEntry? initialEntry;
   final List<BirthdayEntryCategory> categories;
+  final SaveManager<BirthdayEntryCategory> categoryManager;
 
-  const BirthdayEntryCreationForm({super.key, this.initialEntry, required this.categories});
+  const BirthdayEntryCreationForm({
+    super.key,
+    this.initialEntry,
+    required this.categories,
+    required this.categoryManager,
+  });
 
   @override
   State<BirthdayEntryCreationForm> createState() => _BirthdayEntryCreationFormState();
@@ -122,6 +130,28 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
     }
   }
 
+  Future<void> _openCategoryCreationDialog() async {
+    final newCategory = await showDialog<BirthdayEntryCategory>(
+      context: context,
+      builder: (context) => const BirthdayEntryCategoryCreationForm(),
+    );
+
+    if (newCategory == null) return;
+
+    try {
+      final id = await widget.categoryManager.save(newCategory);
+      if (id == null) return;
+
+      newCategory.id = id;
+      setState(() {
+        _categories = [..._categories, newCategory];
+        _category = newCategory;
+      });
+    } on Exception catch (e) {
+      logger.e('Failed to save new category: $e');
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final l10n = AppLocalizations.of(context)!;
@@ -176,31 +206,51 @@ class _BirthdayEntryCreationFormState extends State<BirthdayEntryCreationForm> {
                     const SizedBox(height: 24),
 
                     /// Category Dropdown
-                    DropdownButtonFormField2<BirthdayEntryCategory?>(
-                      value: _category,
-                      hint: Text(l10n.entry_creation_category),
-                      items: [
-                        DropdownMenuItem<BirthdayEntryCategory?>(
-                          value: null,
-                          child: Text(l10n.entry_creation_no_category),
+                    Row(
+                      crossAxisAlignment: CrossAxisAlignment.center,
+                      children: [
+                        Expanded(
+                          child: DropdownButtonFormField2<BirthdayEntryCategory?>(
+                            value: _category,
+                            hint: Text(l10n.entry_creation_category),
+                            items: [
+                              DropdownMenuItem<BirthdayEntryCategory?>(
+                                value: null,
+                                child: Text(l10n.entry_creation_no_category),
+                              ),
+                              ..._categories.map(
+                                (category) => DropdownMenuItem(
+                                  value: category,
+                                  child: Text(category.name ?? l10n.entry_creation_unknown_category),
+                                ),
+                              ),
+                            ],
+                            onChanged: (value) => setState(() => _category = value),
+                            buttonStyleData: const ButtonStyleData(padding: EdgeInsets.only(right: 8)),
+                            dropdownStyleData: DropdownStyleData(
+                              decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
+                            ),
+                            decoration: InputDecoration(
+                              labelText: l10n.entry_creation_category,
+                              prefixIcon: const Icon(Icons.category_outlined),
+                              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
+                          ),
                         ),
-                        ..._categories.map(
-                          (category) => DropdownMenuItem(
-                            value: category,
-                            child: Text(category.name ?? l10n.entry_creation_unknown_category),
+                        const SizedBox(width: 8),
+                        SizedBox(
+                          height: 56,
+                          width: 56,
+                          child: IconButton.outlined(
+                            onPressed: _openCategoryCreationDialog,
+                            icon: const Icon(Icons.add, size: 20),
+                            tooltip: 'New category',
+                            style: IconButton.styleFrom(
+                              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                            ),
                           ),
                         ),
                       ],
-                      onChanged: (value) => setState(() => _category = value),
-                      buttonStyleData: const ButtonStyleData(padding: EdgeInsets.only(right: 8)),
-                      dropdownStyleData: DropdownStyleData(
-                        decoration: BoxDecoration(borderRadius: BorderRadius.circular(12)),
-                      ),
-                      decoration: InputDecoration(
-                        labelText: l10n.entry_creation_category,
-                        prefixIcon: const Icon(Icons.category_outlined),
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
                     ),
                     const SizedBox(height: 24),
 
