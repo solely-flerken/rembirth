@@ -127,10 +127,10 @@
   },
 
   "@_BIRTHDAY_ENTRY_LIST_PERMISSIONS": {},
-  "backgroundPermissionDialogTitle": "Zuverlässige Erinnerungen aktivieren",
-  "backgroundPermissionDialogContent": "Um sicherzustellen, dass Erinnerungen zuverlässig funktionieren, suche und aktiviere bitte 'Auto-Start' oder deaktiviere die Akku-Optimierung für diese App auf dem nächsten Bildschirm.",
+  "backgroundPermissionDialogTitle": "Zuverlässige Erinnerungen",
+  "backgroundPermissionDialogContent": "Deaktiviere Akkubeschränkungen und \"App-Aktivität bei Nichtaktivität pausieren\", damit deine Erinnerungen zuverlässig ankommen.",
   "backgroundPermissionDialogLater": "Später",
-  "backgroundPermissionDialogSettings": "Einstellungen öffnen",
+  "backgroundPermissionDialogSettings": "Einstellungen",
 
   "@_BIRTHDAY_ENTRY_CREATION": {},
 

@@ -74,22 +74,71 @@ class _BirthdayListWidgetState extends State<BirthdayListWidget> {
 
     await showDialog(
       context: context,
-      builder: (context) =>
-          AlertDialog(
-            title: Text(l10n.backgroundPermissionDialogTitle),
-            content: Text(l10n.backgroundPermissionDialogContent),
-            actions: [
-              TextButton(onPressed: () => Navigator.of(context).pop(), child: Text(l10n.backgroundPermissionDialogLater)),
-              TextButton(
-                onPressed: () async {
-                  openAppSettings();
-                  Navigator.of(context).pop();
-                  await prefs.setBool(backgroundPromptKey, true);
-                },
-                child: Text(l10n.backgroundPermissionDialogSettings),
-              ),
-            ],
+      builder: (context) {
+        final theme = Theme.of(context);
+        return Dialog(
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
           ),
+          child: Padding(
+            padding: const EdgeInsets.all(24),
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                CircleAvatar(
+                  radius: 28,
+                  backgroundColor: theme.colorScheme.primaryContainer,
+                  child: Icon(
+                    Icons.notifications_outlined,
+                    size: 28,
+                    color: theme.colorScheme.onPrimaryContainer,
+                  ),
+                ),
+                const SizedBox(height: 16),
+                Text(
+                  l10n.backgroundPermissionDialogTitle,
+                  style: theme.textTheme.titleLarge?.copyWith(
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 8),
+                Text(
+                  l10n.backgroundPermissionDialogContent,
+                  style: theme.textTheme.bodyMedium?.copyWith(
+                    color: theme.colorScheme.onSurfaceVariant,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: Text(l10n.backgroundPermissionDialogLater, style: TextStyle(fontSize: 16),),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () async {
+                          openAppSettings();
+                          Navigator.of(context).pop();
+                          await prefs.setBool(backgroundPromptKey, true);
+                        },
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Text(l10n.backgroundPermissionDialogSettings, style: TextStyle(fontSize: 16),)),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        );
+      },
     );
   }
 

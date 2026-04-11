@@ -128,9 +128,9 @@
 
   "@_BIRTHDAY_ENTRY_LIST_PERMISSIONS": {},
   "backgroundPermissionDialogTitle": "Enable Reliable Reminders",
-  "backgroundPermissionDialogContent": "To ensure your birthday reminders work reliably, please find and enable 'Auto-Start' or disable battery restrictions for this app in the next screen.",
+  "backgroundPermissionDialogContent": "To ensure your birthday reminders arrive on time, please disable any battery restrictions and turn off 'Pause app activity if unused' for this app in the next screen.",
   "backgroundPermissionDialogLater": "Later",
-  "backgroundPermissionDialogSettings": "Go To Settings",
+  "backgroundPermissionDialogSettings": "Settings",
 
   "@_BIRTHDAY_ENTRY_CREATION": {},
 
